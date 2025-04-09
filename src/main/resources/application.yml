@@ -1,17 +1,32 @@
 server:
-  port: 80
-
+  port: 8080
 
 spring:
   datasource:
+    url: jdbc:mysql://localhost:3306/dingdong_suggest?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_ADDRESS}/${MYSQL_DATABASE:springboot_demo}
-    username: ${MYSQL_USERNAME}
-    password: ${MySQL_PASSWORD}
-  mvc:
-    view:
-      suffix: .html
-      prefix: /
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 腾讯云对象存储配置
+tencent:
+  cos:
+    region: ${COS_REGION:ap-shanghai}
+    bucketName: ${COS_BUCKET:7072-prod-0g6uy8h065c32181-1352937363}
+    baseUrl: https://${COS_BUCKET:7072-prod-0g6uy8h065c32181-1352937363}.cos.${COS_REGION:ap-shanghai}.myqcloud.com
 
 mybatis:
   mapper-locations: classpath*:mapper/*Mapper.xml
