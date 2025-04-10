@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findByUserWxid(String userWxid);
-    boolean existsByUserWxid(String userWxid);
+    User findByWxid(String wxid);
+    boolean existsByWxid(String wxid);
     List<User> findByOrgId(String orgId);
 } 

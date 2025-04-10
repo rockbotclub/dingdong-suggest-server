@@ -27,8 +27,8 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public User getUserByWxid(String userWxid) {
-        return userRepository.findByUserWxid(userWxid);
+    public User getUserByWxid(String wxid) {
+        return userRepository.findByWxid(wxid);
     }
 
     public List<User> getUsersByOrgId(String orgId) {
@@ -49,7 +49,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public boolean existsByWxid(String userWxid) {
-        return userRepository.existsByUserWxid(userWxid);
+    public boolean existsByWxid(String wxid) {
+        return userRepository.existsByWxid(wxid);
     }
 } 

@@ -36,9 +36,21 @@ class OrganizationTest {
     }
 
     @Test
+    void testOrganizationCreationWithEmptyOrgId() {
+        Organization org = new Organization();
+        org.setId("org123");
+        org.setOrgName("Test Organization");
+        org.setAddress("Test Address");
+
+        var violations = validator.validate(org);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
     void testOrganizationCreationWithEmptyOrgName() {
         Organization org = new Organization();
         org.setId("org123");
+        
         org.setOrgName(""); // Empty org name
         org.setAddress("Test Address");
 
