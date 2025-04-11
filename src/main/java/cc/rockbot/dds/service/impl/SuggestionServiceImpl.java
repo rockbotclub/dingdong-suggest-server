@@ -1,16 +1,11 @@
 package cc.rockbot.dds.service.impl;
 
-import cc.rockbot.dds.dto.SuggestionListResponse;
 import cc.rockbot.dds.dto.SuggestionRequest;
 import cc.rockbot.dds.dto.SuggestionResponse;
-import cc.rockbot.dds.entity.Feedback;
-import cc.rockbot.dds.entity.Suggestion;
-import cc.rockbot.dds.repository.FeedbackRepository;
+import cc.rockbot.dds.model.SuggestionDO;
 import cc.rockbot.dds.repository.SuggestionRepository;
 import cc.rockbot.dds.service.SuggestionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,129 +14,98 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SuggestionServiceImpl implements SuggestionService {
+
     private final SuggestionRepository suggestionRepository;
-    private final FeedbackRepository feedbackRepository;
-
-    @Autowired
-    public SuggestionServiceImpl(SuggestionRepository suggestionRepository,
-                               FeedbackRepository feedbackRepository) {
-        this.suggestionRepository = suggestionRepository;
-        this.feedbackRepository = feedbackRepository;
-    }
 
     @Override
-    public SuggestionListResponse getSuggestions(PageRequest pageRequest, String status, String organizationId) {
-        Page<Suggestion> page;
-        if (status != null && organizationId != null) {
-            page = suggestionRepository.findByStatusAndOrgId(Integer.parseInt(status), organizationId, pageRequest);
-        } else if (status != null) {
-            page = suggestionRepository.findByStatus(Integer.parseInt(status), pageRequest);
-        } else if (organizationId != null) {
-            page = suggestionRepository.findByOrgId(organizationId, pageRequest);
-        } else {
-            page = suggestionRepository.findAll(pageRequest);
-        }
+    @Transactional
+    public SuggestionResponse createSuggestion(SuggestionRequest request) {
+        SuggestionDO suggestion = new SuggestionDO();
+        suggestion.setTitle(request.getTitle());
+        suggestion.setProblemDescription(request.getProblemDescription());
+        suggestion.setProblemAnalysis(request.getProblemAnalysis());
+        suggestion.setSuggestion(request.getSuggestion());
+        suggestion.setExpectedOutcome(request.getExpectedOutcome());
+        suggestion.setStatus(1); // Using Integer for status
+        suggestion.setGmtCreate(LocalDateTime.now());
+        suggestion.setGmtModified(LocalDateTime.now());
+        suggestion.setUserWxid(request.getUserWxid());
+        suggestion.setOrgId(request.getOrgId());
 
-        SuggestionListResponse response = new SuggestionListResponse();
-        response.setList(page.getContent().stream()
-                .map(this::convertToListItem)
-                .collect(Collectors.toList()));
-        response.setTotal(page.getTotalElements());
-        return response;
-    }
-
-    @Override
-    public SuggestionResponse getSuggestion(Long suggestionId) {
-        Suggestion suggestion = suggestionRepository.findById(suggestionId)
-                .orElseThrow(() -> new RuntimeException("Suggestion not found with id: " + suggestionId));
+        suggestion = suggestionRepository.save(suggestion);
         return convertToResponse(suggestion);
     }
 
     @Override
     @Transactional
-    public SuggestionResponse createSuggestion(SuggestionRequest request) {
-        Suggestion suggestion = new Suggestion();
-        suggestion.setTitle(request.getTitle());
-        suggestion.setProblemDescription(request.getProblem());
-        suggestion.setProblemAnalysis(request.getAnalysis());
-        suggestion.setSuggestion(String.join("\n", request.getSuggestions()));
-        suggestion.setExpectedOutcome(request.getExpectedEffect());
-        suggestion.setImageUrls(request.getImages());
-        suggestion.setUserWxid(request.getSubmitterWxid());
-        suggestion.setStatus(0); // Initial status
-        suggestion.setOrgId(request.getOrganizationId());
-        suggestion.setGmtCreate(LocalDateTime.now());
-        suggestion.setGmtModified(LocalDateTime.now());
-
-        Suggestion saved = suggestionRepository.save(suggestion);
-        return convertToResponse(saved);
-    }
-
-    @Override
-    @Transactional
     public void updateSuggestionStatus(Long suggestionId, String status) {
-        Suggestion suggestion = suggestionRepository.findById(suggestionId)
-                .orElseThrow(() -> new RuntimeException("Suggestion not found with id: " + suggestionId));
+        SuggestionDO suggestion = suggestionRepository.findById(suggestionId)
+                .orElseThrow(() -> new RuntimeException("Suggestion not found"));
+
         suggestion.setStatus(Integer.parseInt(status));
         suggestion.setGmtModified(LocalDateTime.now());
         suggestionRepository.save(suggestion);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public SuggestionResponse getSuggestionById(Long id) {
+        SuggestionDO suggestion = suggestionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Suggestion not found"));
+        return convertToResponse(suggestion);
+    }
+
+    @Override
     @Transactional
-    public void addFeedback(Long suggestionId, String content) {
-        Suggestion suggestion = suggestionRepository.findById(suggestionId)
-                .orElseThrow(() -> new RuntimeException("Suggestion not found with id: " + suggestionId));
+    public SuggestionResponse updateSuggestion(Long id, SuggestionRequest request) {
+        SuggestionDO suggestion = suggestionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Suggestion not found"));
 
-        Feedback feedback = new Feedback();
-        feedback.setContent(content);
-        feedback.setAuthor("System"); // TODO: Get current user
-        feedback.setSuggestion(suggestion);
-        feedback.setGmtCreate(LocalDateTime.now());
-        feedback.setGmtModified(LocalDateTime.now());
+        suggestion.setTitle(request.getTitle());
+        suggestion.setProblemDescription(request.getProblemDescription());
+        suggestion.setProblemAnalysis(request.getProblemAnalysis());
+        suggestion.setSuggestion(request.getSuggestion());
+        suggestion.setExpectedOutcome(request.getExpectedOutcome());
+        suggestion.setUserWxid(request.getUserWxid());
+        suggestion.setOrgId(request.getOrgId());
+        suggestion.setGmtModified(LocalDateTime.now());
 
-        feedbackRepository.save(feedback);
+        suggestion = suggestionRepository.save(suggestion);
+        return convertToResponse(suggestion);
     }
 
-    private SuggestionListResponse.SuggestionListItem convertToListItem(Suggestion suggestion) {
-        SuggestionListResponse.SuggestionListItem item = new SuggestionListResponse.SuggestionListItem();
-        item.setId(suggestion.getId());
-        item.setTitle(suggestion.getTitle());
-        item.setStatus(String.valueOf(suggestion.getStatus()));
-        item.setDate(suggestion.getGmtCreate().toString());
-        return item;
+    @Override
+    @Transactional
+    public void deleteSuggestion(Long id) {
+        if (!suggestionRepository.existsById(id)) {
+            throw new RuntimeException("Suggestion not found");
+        }
+        suggestionRepository.deleteById(id);
     }
 
-    private SuggestionResponse convertToResponse(Suggestion suggestion) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<SuggestionResponse> getAllSuggestions() {
+        return suggestionRepository.findAll().stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private SuggestionResponse convertToResponse(SuggestionDO suggestion) {
         SuggestionResponse response = new SuggestionResponse();
         response.setId(suggestion.getId());
         response.setTitle(suggestion.getTitle());
-        response.setProblem(suggestion.getProblemDescription());
-        response.setAnalysis(suggestion.getProblemAnalysis());
-        response.setSuggestions(List.of(suggestion.getSuggestion().split("\n")));
-        response.setExpectedEffect(suggestion.getExpectedOutcome());
-        response.setImages(suggestion.getImageUrls());
-        response.setSubmitterWxid(suggestion.getUserWxid());
-        response.setStatus(String.valueOf(suggestion.getStatus()));
-        response.setOrganizationId(suggestion.getOrgId());
+        response.setProblemDescription(suggestion.getProblemDescription());
+        response.setProblemAnalysis(suggestion.getProblemAnalysis());
+        response.setSuggestion(suggestion.getSuggestion());
+        response.setExpectedOutcome(suggestion.getExpectedOutcome());
+        response.setStatus(suggestion.getStatus());
         response.setCreateTime(suggestion.getGmtCreate());
         response.setUpdateTime(suggestion.getGmtModified());
-
-        // Add feedbacks
-        List<Feedback> feedbacks = feedbackRepository.findBySuggestionId(suggestion.getId());
-        response.setFeedbacks(feedbacks.stream()
-                .map(this::convertToFeedbackResponse)
-                .collect(Collectors.toList()));
-
-        return response;
-    }
-
-    private SuggestionResponse.Feedback convertToFeedbackResponse(Feedback feedback) {
-        SuggestionResponse.Feedback response = new SuggestionResponse.Feedback();
-        response.setContent(feedback.getContent());
-        response.setCreateTime(feedback.getGmtCreate());
-        response.setAuthor(feedback.getAuthor());
+        response.setUserWxid(suggestion.getUserWxid());
+        response.setOrgId(suggestion.getOrgId());
         return response;
     }
 } 

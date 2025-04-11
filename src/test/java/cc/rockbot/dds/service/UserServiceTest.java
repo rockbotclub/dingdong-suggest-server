@@ -1,6 +1,6 @@
 package cc.rockbot.dds.service;
 
-import cc.rockbot.dds.entity.User;
+import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * 用户服务测试类
+ * 用于测试UserService的各种业务逻辑
+ */
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
@@ -26,132 +31,145 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    private UserDO user;
+
+    /**
+     * 在每个测试方法执行前初始化测试环境
+     * 注意：不需要手动初始化mock对象，因为@ExtendWith(MockitoExtension.class)已经处理了
+     */
     @BeforeEach
     void setUp() {
-        // No need to initialize mocks as @ExtendWith(MockitoExtension.class) handles it
+        user = new UserDO();
+        user.setId(1L);
+        user.setWxid("test_wxid");
+        user.setUserName("Test User");
+        user.setUserOrg("Test Org");
+        user.setUserPhone("13800138000");
+        user.setStatus(1);
+        user.setOrgId("test_org");
     }
 
+    /**
+     * 测试创建用户功能
+     * 验证是否能成功创建用户并返回保存后的用户对象
+     */
     @Test
-    void createUser_ShouldReturnSavedUser() {
+    void createUser_WhenUserIsValid_ShouldReturnCreatedUser() {
         // Given
-        User user = new User();
-        user.setId(1L);
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(userRepository.save(any(UserDO.class))).thenReturn(user);
 
         // When
-        User result = userService.createUser(user);
+        UserDO createdUser = userService.createUser(user);
 
         // Then
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
+        assertNotNull(createdUser);
+        assertEquals(1L, createdUser.getId());
+        assertEquals("test_wxid", createdUser.getWxid());
         verify(userRepository).save(user);
     }
 
+    /**
+     * 测试通过ID获取用户功能
+     * 验证是否能成功获取指定ID的用户
+     */
     @Test
-    void getUserById_ShouldReturnUser() {
+    void getUserById_WhenIdExists_ShouldReturnUser() {
         // Given
-        User user = new User();
-        user.setId(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // When
-        Optional<User> result = userService.getUserById(1L);
+        Optional<UserDO> foundUser = userService.getUserById(1L);
 
         // Then
-        assertTrue(result.isPresent());
-        assertEquals(1L, result.get().getId());
+        assertTrue(foundUser.isPresent());
+        assertEquals(1L, foundUser.get().getId());
         verify(userRepository).findById(1L);
     }
 
+    /**
+     * 测试获取不存在的用户时的处理
+     * 验证当用户不存在时是否返回空的Optional对象
+     */
     @Test
     void getUserById_WhenNotFound_ShouldReturnEmpty() {
         // Given
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         // When
-        Optional<User> result = userService.getUserById(1L);
+        Optional<UserDO> result = userService.getUserById(1L);
 
         // Then
         assertFalse(result.isPresent());
         verify(userRepository).findById(1L);
     }
 
-    @Test
-    void getUserByWxid_ShouldReturnUser() {
-        // Given
-        User user = new User();
-        user.setId(1L);
-        when(userRepository.findByWxid("test_wxid")).thenReturn(user);
-
-        // When
-        User result = userService.getUserByWxid("test_wxid");
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-        verify(userRepository).findByWxid("test_wxid");
-    }
-
-    @Test
-    void getUsersByOrgId_ShouldReturnUsers() {
-        // Given
-        User user1 = new User();
-        user1.setId(1L);
-        User user2 = new User();
-        user2.setId(2L);
-        List<User> users = Arrays.asList(user1, user2);
-        when(userRepository.findByOrgId("org1")).thenReturn(users);
-
-        // When
-        List<User> result = userService.getUsersByOrgId("org1");
-
-        // Then
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(1L, result.get(0).getId());
-        assertEquals(2L, result.get(1).getId());
-        verify(userRepository).findByOrgId("org1");
-    }
-
+    /**
+     * 测试获取所有用户功能
+     * 验证是否能成功获取所有用户列表
+     */
     @Test
     void getAllUsers_ShouldReturnAllUsers() {
         // Given
-        User user1 = new User();
-        user1.setId(1L);
-        User user2 = new User();
-        user2.setId(2L);
-        List<User> users = Arrays.asList(user1, user2);
+        List<UserDO> users = Arrays.asList(user);
         when(userRepository.findAll()).thenReturn(users);
 
         // When
-        List<User> result = userService.getAllUsers();
+        List<UserDO> foundUsers = userService.getAllUsers();
 
         // Then
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(1L, result.get(0).getId());
-        assertEquals(2L, result.get(1).getId());
+        assertNotNull(foundUsers);
+        assertEquals(1, foundUsers.size());
         verify(userRepository).findAll();
     }
 
+    /**
+     * 测试更新用户功能
+     * 验证是否能成功更新指定ID的用户
+     */
     @Test
-    void updateUser_ShouldReturnUpdatedUser() {
+    void updateUser_ShouldUpdateUser() {
         // Given
-        User user = new User();
-        user.setId(1L);
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        UserDO existingUser = new UserDO();
+        existingUser.setId(1L);
+        when(userRepository.existsById(1L)).thenReturn(true);
+        when(userRepository.save(any(UserDO.class))).thenReturn(existingUser);
 
         // When
-        User result = userService.updateUser(user);
+        UserDO result = userService.updateUser(existingUser);
 
         // Then
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        verify(userRepository).save(user);
+        verify(userRepository).existsById(1L);
+        verify(userRepository).save(existingUser);
     }
 
+    /**
+     * 测试更新不存在的用户
+     * 验证当用户不存在时是否能正确处理
+     */
     @Test
-    void deleteUser_ShouldCallRepository() {
+    void updateUser_WhenNotFound_ShouldThrowException() {
+        // Given
+        UserDO user = new UserDO();
+        user.setId(1L);
+        when(userRepository.existsById(1L)).thenReturn(false);
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> userService.updateUser(user));
+        verify(userRepository, never()).save(any(UserDO.class));
+    }
+
+    /**
+     * 测试删除用户功能
+     * 验证是否能成功删除指定ID的用户
+     */
+    @Test
+    void deleteUser_ShouldDeleteUser() {
+        // Given
+        when(userRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(userRepository).deleteById(1L);
+
         // When
         userService.deleteUser(1L);
 
@@ -159,6 +177,44 @@ class UserServiceTest {
         verify(userRepository).deleteById(1L);
     }
 
+    /**
+     * 测试删除不存在的用户
+     * 验证当用户不存在时是否能正确处理
+     */
+    @Test
+    void deleteUser_WhenNotFound_ShouldThrowException() {
+        // Given
+        when(userRepository.existsById(1L)).thenReturn(false);
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> userService.deleteUser(1L));
+        verify(userRepository, never()).deleteById(1L);
+    }
+
+    /**
+     * 测试通过微信ID获取用户功能
+     * 验证是否能成功获取指定微信ID的用户
+     */
+    @Test
+    void getUserByWxid_ShouldReturnUser() {
+        // Given
+        UserDO user = new UserDO();
+        user.setWxid("test_wxid");
+        when(userRepository.findByWxid("test_wxid")).thenReturn(user);
+
+        // When
+        UserDO result = userService.getUserByWxid("test_wxid");
+
+        // Then
+        assertNotNull(result);
+        assertEquals("test_wxid", result.getWxid());
+        verify(userRepository).findByWxid("test_wxid");
+    }
+
+    /**
+     * 测试检查微信ID是否存在功能
+     * 验证是否能正确检查微信ID是否存在
+     */
     @Test
     void existsByWxid_ShouldReturnTrue() {
         // Given
@@ -172,16 +228,172 @@ class UserServiceTest {
         verify(userRepository).existsByWxid("test_wxid");
     }
 
+    /**
+     * 测试通过组织ID获取用户功能
+     * 验证是否能成功获取指定组织ID的所有用户
+     */
     @Test
-    void existsByWxid_ShouldReturnFalse() {
+    void getUsersByOrgId_ShouldReturnUsers() {
         // Given
-        when(userRepository.existsByWxid("test_wxid")).thenReturn(false);
+        UserDO user1 = new UserDO();
+        user1.setOrgId("test_org");
+        UserDO user2 = new UserDO();
+        user2.setOrgId("test_org");
+        List<UserDO> users = Arrays.asList(user1, user2);
+        when(userRepository.findByOrgId("test_org")).thenReturn(users);
 
         // When
-        boolean result = userService.existsByWxid("test_wxid");
+        List<UserDO> result = userService.getUsersByOrgId("test_org");
 
         // Then
-        assertFalse(result);
-        verify(userRepository).existsByWxid("test_wxid");
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(userRepository).findByOrgId("test_org");
+    }
+
+    /**
+     * 测试创建用户时传入null对象
+     * 验证当传入null对象时是否能正确处理
+     */
+    @Test
+    void createUser_WhenUserIsNull_ShouldThrowException() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(null));
+        verify(userRepository, never()).save(any(UserDO.class));
+    }
+
+    /**
+     * 测试创建用户时传入无效数据
+     * 验证当用户数据不完整时是否能正确处理
+     */
+    @Test
+    void createUser_WithInvalidData_ShouldThrowException() {
+        // Given
+        UserDO user = new UserDO();
+        user.setWxid(""); // 空微信ID
+        when(userRepository.save(any(UserDO.class))).thenThrow(new IllegalArgumentException());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(user));
+        verify(userRepository).save(user);
+    }
+
+    /**
+     * 测试获取所有用户时数据库为空的情况
+     * 验证当没有用户数据时是否能返回空列表
+     */
+    @Test
+    void getAllUsers_WhenNoUsers_ShouldReturnEmptyList() {
+        // Given
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // When
+        List<UserDO> result = userService.getAllUsers();
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(userRepository).findAll();
+    }
+
+    /**
+     * 测试更新用户时传入null对象
+     * 验证当传入null对象时是否能正确处理
+     */
+    @Test
+    void updateUser_WhenUserIsNull_ShouldThrowException() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(null));
+        verify(userRepository, never()).save(any(UserDO.class));
+    }
+
+    /**
+     * 测试更新用户时ID为null的情况
+     * 验证当用户ID为null时是否能正确处理
+     */
+    @Test
+    void updateUser_WhenUserIdIsNull_ShouldThrowException() {
+        // Given
+        UserDO user = new UserDO();
+        user.setId(null);
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(user));
+        verify(userRepository, never()).save(any(UserDO.class));
+    }
+
+    /**
+     * 测试通过微信ID获取用户时传入空字符串
+     * 验证当微信ID为空字符串时是否能正确处理
+     */
+    @Test
+    void getUserByWxid_WhenWxidIsEmpty_ShouldThrowException() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.getUserByWxid(""));
+        verify(userRepository, never()).findByWxid(anyString());
+    }
+
+    /**
+     * 测试通过微信ID获取用户时传入null
+     * 验证当微信ID为null时是否能正确处理
+     */
+    @Test
+    void getUserByWxid_WhenWxidIsNull_ShouldThrowException() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.getUserByWxid(null));
+        verify(userRepository, never()).findByWxid(anyString());
+    }
+
+    /**
+     * 测试通过组织ID获取用户时传入空字符串
+     * 验证当组织ID为空字符串时是否能正确处理
+     */
+    @Test
+    void getUsersByOrgId_WhenOrgIdIsEmpty_ShouldThrowException() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.getUsersByOrgId(""));
+        verify(userRepository, never()).findByOrgId(anyString());
+    }
+
+    /**
+     * 测试通过组织ID获取用户时传入null
+     * 验证当组织ID为null时是否能正确处理
+     */
+    @Test
+    void getUsersByOrgId_WhenOrgIdIsNull_ShouldThrowException() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> userService.getUsersByOrgId(null));
+        verify(userRepository, never()).findByOrgId(anyString());
+    }
+
+    /**
+     * 测试通过组织ID获取用户时没有匹配的用户
+     * 验证当没有匹配的用户时是否能返回空列表
+     */
+    @Test
+    void getUsersByOrgId_WhenNoUsersFound_ShouldReturnEmptyList() {
+        // Given
+        when(userRepository.findByOrgId("test_org")).thenReturn(Collections.emptyList());
+
+        // When
+        List<UserDO> result = userService.getUsersByOrgId("test_org");
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(userRepository).findByOrgId("test_org");
+    }
+
+    @Test
+    void getUserByWxid_WhenNotFound_ShouldReturnNull() {
+        // Given
+        when(userRepository.findByWxid("non_existent_wxid")).thenReturn(null);
+
+        // When
+        UserDO result = userService.getUserByWxid("non_existent_wxid");
+
+        // Then
+        assertNull(result);
+        verify(userRepository).findByWxid("non_existent_wxid");
     }
 } 

@@ -1,10 +1,11 @@
 package cc.rockbot.dds.service;
 
-import cc.rockbot.dds.entity.Organization;
+import cc.rockbot.dds.model.OrganizationDO;
 import cc.rockbot.dds.repository.OrganizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,32 +20,53 @@ public class OrganizationService {
     }
 
     @Transactional
-    public Organization createOrganization(Organization organization) {
+    public OrganizationDO createOrganization(OrganizationDO organization) {
+        if (organization == null) {
+            throw new IllegalArgumentException("Organization cannot be null");
+        }
         return organizationRepository.save(organization);
     }
 
-    public Optional<Organization> getOrganizationById(String id) {
+    public Optional<OrganizationDO> getOrganizationById(String id) {
+        if (!StringUtils.hasText(id)) {
+            throw new IllegalArgumentException("Organization ID cannot be null or empty");
+        }
         return organizationRepository.findById(id);
     }
 
-
-
-    public List<Organization> getAllOrganizations() {
+    public List<OrganizationDO> getAllOrganizations() {
         return organizationRepository.findAll();
     }
 
     @Transactional
-    public Organization updateOrganization(Organization organization) {
+    public OrganizationDO updateOrganization(OrganizationDO organization) {
+        if (organization == null) {
+            throw new IllegalArgumentException("Organization cannot be null");
+        }
+        if (!StringUtils.hasText(organization.getId())) {
+            throw new IllegalArgumentException("Organization ID cannot be null");
+        }
+        if (!organizationRepository.existsById(organization.getId())) {
+            throw new RuntimeException("Organization not found");
+        }
         return organizationRepository.save(organization);
     }
 
     @Transactional
     public void deleteOrganization(String id) {
+        if (!StringUtils.hasText(id)) {
+            throw new IllegalArgumentException("Organization ID cannot be null or empty");
+        }
+        if (!organizationRepository.existsById(id)) {
+            throw new RuntimeException("Organization not found");
+        }
         organizationRepository.deleteById(id);
     }
 
-
     public boolean existsById(String id) {
+        if (!StringUtils.hasText(id)) {
+            throw new IllegalArgumentException("Organization ID cannot be null or empty");
+        }
         return organizationRepository.existsById(id);
     }
 } 

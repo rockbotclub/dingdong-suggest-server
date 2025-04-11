@@ -1,46 +1,86 @@
 package cc.rockbot.dds.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 import lombok.Data;
-
+import java.io.Serializable;
 import java.util.List;
 
+/**
+ * 建议请求数据传输对象
+ * 用于接收创建或更新建议的请求数据
+ *
+ * @author rockops
+ * @since 1.0
+ */
 @Data
-public class SuggestionRequest {
-    @NotBlank(message = "建议标题不能为空")
-    @Size(max = 255, message = "建议标题不能超过255个字符")
+public class SuggestionRequest implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
+    /**
+     * 建议标题
+     * 不能为空，最大长度255字符
+     */
+    @NotBlank(message = "标题不能为空")
+    @Size(max = 255, message = "标题长度不能超过255个字符")
     private String title;
 
+    /**
+     * 问题描述
+     * 不能为空，最大长度1000字符
+     */
     @NotBlank(message = "问题描述不能为空")
-    private String problem;
+    @Size(max = 1000, message = "问题描述长度不能超过1000个字符")
+    private String problemDescription;
 
-    private String analysis;
+    /**
+     * 问题分析
+     * 最大长度1000字符
+     */
+    @Size(max = 1000, message = "问题分析长度不能超过1000个字符")
+    private String problemAnalysis;
 
-    @NotNull(message = "具体建议不能为空")
-    @Size(min = 1, message = "至少需要一条具体建议")
-    private List<String> suggestions;
+    /**
+     * 建议内容
+     * 不能为空，最大长度1000字符
+     */
+    @NotBlank(message = "建议内容不能为空")
+    @Size(max = 1000, message = "建议内容长度不能超过1000个字符")
+    private String suggestion;
 
-    private String expectedEffect;
+    /**
+     * 预期结果
+     * 最大长度1000字符
+     */
+    @Size(max = 1000, message = "预期结果长度不能超过1000个字符")
+    private String expectedOutcome;
 
-    private List<String> images;
+    /**
+     * 用户微信ID
+     * 不能为空，最大长度255字符
+     */
+    @NotBlank(message = "用户微信ID不能为空")
+    @Size(max = 255, message = "用户微信ID长度不能超过255个字符")
+    private String userWxid;
 
-    @NotBlank(message = "提交人姓名不能为空")
-    private String submitterName;
-
-    @NotBlank(message = "提交人部门不能为空")
-    private String submitterDepartment;
-
-    @NotBlank(message = "提交人电话不能为空")
-    private String submitterPhone;
-
-    @NotBlank(message = "提交人微信ID不能为空")
-    private String submitterWxid;
-
+    /**
+     * 组织ID
+     * 不能为空，最大长度255字符
+     */
     @NotBlank(message = "组织ID不能为空")
-    private String organizationId;
+    @Size(max = 255, message = "组织ID长度不能超过255个字符")
+    private String orgId;
 
-    @NotBlank(message = "组织名称不能为空")
-    private String organizationName;
+    /**
+     * 问题图片列表
+     * 最多3张图片，以JSON格式存储在数据库中
+     */
+    @Size(max = 3, message = "最多只能上传3张图片")
+    @Valid
+    @JsonProperty("images")
+    private List<ProblemImage> images;
 } 

@@ -1,4 +1,4 @@
-package cc.rockbot.dds.entity;
+package cc.rockbot.dds.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "users")
-public class User {
+public class UserDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

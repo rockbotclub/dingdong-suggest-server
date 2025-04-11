@@ -1,15 +1,14 @@
-package cc.rockbot.dds.entity;
+package cc.rockbot.dds.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Entity
 @Table(name = "suggestions")
-public class Suggestion {
+public class SuggestionDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,7 +39,7 @@ public class Suggestion {
     private String expectedOutcome;
 
     @Column(name = "image_urls", columnDefinition = "JSON")
-    private List<@Pattern(regexp = "^https?://.*", message = "Invalid image URL format") String> imageUrls;
+    private String imageUrls;
 
     @NotBlank(message = "User wxid cannot be empty")
     @Size(max = 255, message = "User wxid must be less than 255 characters")
@@ -48,8 +47,6 @@ public class Suggestion {
     private String userWxid;
 
     @NotNull(message = "Status cannot be null")
-    @Min(value = 0, message = "Status must be greater than or equal to 0")
-    @Max(value = 3, message = "Status must be less than or equal to 3")
     @Column(name = "status", nullable = false)
     private Integer status;
 

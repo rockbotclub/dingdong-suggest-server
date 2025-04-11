@@ -1,4 +1,4 @@
-package cc.rockbot.dds.entity;
+package cc.rockbot.dds.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "orgnizations")
-public class Organization {
+public class OrganizationDO {
     @Id
     @NotBlank(message = "Organization ID cannot be empty")
     @Size(max = 255, message = "Organization ID must be less than 255 characters")

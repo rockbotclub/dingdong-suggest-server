@@ -1,6 +1,6 @@
 package cc.rockbot.dds.controller;
 
-import cc.rockbot.dds.entity.Organization;
+import cc.rockbot.dds.model.OrganizationDO;
 import cc.rockbot.dds.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,31 +19,31 @@ public class OrganizationController {
     }
 
     @PostMapping
-    public ResponseEntity<Organization> createOrganization(@RequestBody Organization organization) {
+    public ResponseEntity<OrganizationDO> createOrganization(@RequestBody OrganizationDO organization) {
         return ResponseEntity.ok(organizationService.createOrganization(organization));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Organization> getOrganizationById(@PathVariable String id) {
+    public ResponseEntity<OrganizationDO> getOrganizationById(@PathVariable String id) {
         return organizationService.getOrganizationById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/orgid/{orgId}")
-    public ResponseEntity<Organization> getOrganizationByOrgId(@PathVariable String orgId) {
+    public ResponseEntity<OrganizationDO> getOrganizationByOrgId(@PathVariable String orgId) {
         return organizationService.getOrganizationById(orgId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
-    public ResponseEntity<List<Organization>> getAllOrganizations() {
+    public ResponseEntity<List<OrganizationDO>> getAllOrganizations() {
         return ResponseEntity.ok(organizationService.getAllOrganizations());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Organization> updateOrganization(@PathVariable String id, @RequestBody Organization organization) {
+    public ResponseEntity<OrganizationDO> updateOrganization(@PathVariable String id, @RequestBody OrganizationDO organization) {
         organization.setId(id);
         return ResponseEntity.ok(organizationService.updateOrganization(organization));
     }
