@@ -27,9 +27,7 @@ public class OrganizationService {
         return organizationRepository.findById(id);
     }
 
-    public Organization getOrganizationByOrgId(String orgId) {
-        return organizationRepository.findByOrgId(orgId);
-    }
+
 
     public List<Organization> getAllOrganizations() {
         return organizationRepository.findAll();
@@ -45,9 +43,6 @@ public class OrganizationService {
         organizationRepository.deleteById(id);
     }
 
-    public boolean existsByOrgId(String orgId) {
-        return organizationRepository.existsByOrgId(orgId);
-    }
 
     public boolean existsById(String id) {
         return organizationRepository.existsById(id);

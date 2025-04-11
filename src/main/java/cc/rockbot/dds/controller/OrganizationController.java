@@ -5,7 +5,7 @@ import cc.rockbot.dds.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Optional;
 import java.util.List;
 
 @RestController
@@ -32,8 +32,9 @@ public class OrganizationController {
 
     @GetMapping("/orgid/{orgId}")
     public ResponseEntity<Organization> getOrganizationByOrgId(@PathVariable String orgId) {
-        Organization organization = organizationService.getOrganizationByOrgId(orgId);
-        return organization != null ? ResponseEntity.ok(organization) : ResponseEntity.notFound().build();
+        return organizationService.getOrganizationById(orgId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping

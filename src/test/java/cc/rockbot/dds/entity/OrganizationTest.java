@@ -38,7 +38,7 @@ class OrganizationTest {
     @Test
     void testOrganizationCreationWithEmptyOrgId() {
         Organization org = new Organization();
-        org.setId("org123");
+        org.setId(""); // Empty org id
         org.setOrgName("Test Organization");
         org.setAddress("Test Address");
 

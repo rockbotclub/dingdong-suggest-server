@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class OrganizationServiceTest {
+class OrganizationServiceTest {
 
     @Mock
     private OrganizationRepository organizationRepository;
@@ -60,24 +60,27 @@ public class OrganizationServiceTest {
     }
 
     @Test
-    void testGetOrganizationByOrgId() {
-        when(organizationRepository.findByOrgId("test_org_id")).thenReturn(organization);
+    void testGetAllOrganizations() {
+        List<Organization> organizations = Arrays.asList(organization);
+        when(organizationRepository.findAll()).thenReturn(organizations);
 
-        Organization foundOrganization = organizationService.getOrganizationByOrgId("test_org_id");
-        assertNotNull(foundOrganization);
-        assertEquals("test_org_id", foundOrganization.getId());
+        List<Organization> foundOrganizations = organizationService.getAllOrganizations();
+        assertNotNull(foundOrganizations);
+        assertEquals(1, foundOrganizations.size());
+        assertEquals("test_org_id", foundOrganizations.get(0).getId());
 
-        verify(organizationRepository).findByOrgId("test_org_id");
+        verify(organizationRepository).findAll();
     }
 
     @Test
-    void testExistsByOrgId() {
-        when(organizationRepository.existsByOrgId("test_org_id")).thenReturn(true);
+    void testUpdateOrganization() {
+        when(organizationRepository.save(any(Organization.class))).thenReturn(organization);
 
-        boolean exists = organizationService.existsByOrgId("test_org_id");
-        assertTrue(exists);
+        Organization updatedOrganization = organizationService.updateOrganization(organization);
+        assertNotNull(updatedOrganization);
+        assertEquals("test_org_id", updatedOrganization.getId());
 
-        verify(organizationRepository).existsByOrgId("test_org_id");
+        verify(organizationRepository).save(any(Organization.class));
     }
 
     @Test

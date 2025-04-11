@@ -1,15 +1,16 @@
 package cc.rockbot.dds.controller;
 
-import cc.rockbot.dds.entity.Suggestion;
+import cc.rockbot.dds.dto.SuggestionListResponse;
+import cc.rockbot.dds.dto.SuggestionRequest;
+import cc.rockbot.dds.dto.SuggestionResponse;
 import cc.rockbot.dds.service.SuggestionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/suggestions")
+@RequestMapping("/api/v1/suggestions")
 public class SuggestionController {
     private final SuggestionService suggestionService;
 
@@ -18,47 +19,39 @@ public class SuggestionController {
         this.suggestionService = suggestionService;
     }
 
-    @PostMapping
-    public ResponseEntity<Suggestion> createSuggestion(@RequestBody Suggestion suggestion) {
-        return ResponseEntity.ok(suggestionService.createSuggestion(suggestion));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Suggestion> getSuggestionById(@PathVariable Long id) {
-        return suggestionService.getSuggestionById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/user/{userWxid}")
-    public ResponseEntity<List<Suggestion>> getSuggestionsByUserWxid(@PathVariable String userWxid) {
-        return ResponseEntity.ok(suggestionService.getSuggestionsByUserWxid(userWxid));
-    }
-
-    @GetMapping("/org/{orgId}")
-    public ResponseEntity<List<Suggestion>> getSuggestionsByOrgId(@PathVariable String orgId) {
-        return ResponseEntity.ok(suggestionService.getSuggestionsByOrgId(orgId));
-    }
-
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<Suggestion>> getSuggestionsByStatus(@PathVariable Integer status) {
-        return ResponseEntity.ok(suggestionService.getSuggestionsByStatus(status));
-    }
-
     @GetMapping
-    public ResponseEntity<List<Suggestion>> getAllSuggestions() {
-        return ResponseEntity.ok(suggestionService.getAllSuggestions());
+    public ResponseEntity<SuggestionListResponse> getSuggestions(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String organizationId) {
+        return ResponseEntity.ok(suggestionService.getSuggestions(
+                PageRequest.of(page - 1, pageSize), status, organizationId));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Suggestion> updateSuggestion(@PathVariable Long id, @RequestBody Suggestion suggestion) {
-        suggestion.setId(id);
-        return ResponseEntity.ok(suggestionService.updateSuggestion(suggestion));
+    @GetMapping("/{suggestionId}")
+    public ResponseEntity<SuggestionResponse> getSuggestion(@PathVariable Long suggestionId) {
+        return ResponseEntity.ok(suggestionService.getSuggestion(suggestionId));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSuggestion(@PathVariable Long id) {
-        suggestionService.deleteSuggestion(id);
+    @PostMapping
+    public ResponseEntity<SuggestionResponse> createSuggestion(@RequestBody SuggestionRequest request) {
+        return ResponseEntity.ok(suggestionService.createSuggestion(request));
+    }
+
+    @PostMapping("/{suggestionId}/status")
+    public ResponseEntity<?> updateSuggestionStatus(
+            @PathVariable Long suggestionId,
+            @RequestParam String status) {
+        suggestionService.updateSuggestionStatus(suggestionId, status);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{suggestionId}/feedback")
+    public ResponseEntity<?> addFeedback(
+            @PathVariable Long suggestionId,
+            @RequestParam String content) {
+        suggestionService.addFeedback(suggestionId, content);
         return ResponseEntity.ok().build();
     }
 } 

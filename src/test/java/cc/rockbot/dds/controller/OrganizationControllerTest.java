@@ -4,9 +4,10 @@ import cc.rockbot.dds.entity.Organization;
 import cc.rockbot.dds.service.OrganizationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@ExtendWith(MockitoExtension.class)
 class OrganizationControllerTest {
 
     @Mock
@@ -32,7 +34,6 @@ class OrganizationControllerTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(organizationController).build();
     }
 
@@ -52,11 +53,34 @@ class OrganizationControllerTest {
     }
 
     @Test
+    void getOrganizationById_ShouldReturnOrganization() throws Exception {
+        // Given
+        Organization organization = new Organization();
+        organization.setId("org1");
+        when(organizationService.getOrganizationById("org1")).thenReturn(Optional.of(organization));
+
+        // When & Then
+        mockMvc.perform(get("/api/organizations/org1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("org1"));
+    }
+
+    @Test
+    void getOrganizationById_WhenNotFound_ShouldReturn404() throws Exception {
+        // Given
+        when(organizationService.getOrganizationById("org1")).thenReturn(Optional.empty());
+
+        // When & Then
+        mockMvc.perform(get("/api/organizations/org1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void getOrganizationByOrgId_ShouldReturnOrganization() throws Exception {
         // Given
         Organization organization = new Organization();
         organization.setId("org1");
-        when(organizationService.getOrganizationByOrgId("org1")).thenReturn(organization);
+        when(organizationService.getOrganizationById("org1")).thenReturn(Optional.of(organization));
 
         // When & Then
         mockMvc.perform(get("/api/organizations/orgid/org1"))
@@ -67,7 +91,7 @@ class OrganizationControllerTest {
     @Test
     void getOrganizationByOrgId_WhenNotFound_ShouldReturn404() throws Exception {
         // Given
-        when(organizationService.getOrganizationByOrgId("org1")).thenReturn(null);
+        when(organizationService.getOrganizationById("org1")).thenReturn(Optional.empty());
 
         // When & Then
         mockMvc.perform(get("/api/organizations/orgid/org1"))

@@ -4,9 +4,10 @@ import cc.rockbot.dds.entity.User;
 import cc.rockbot.dds.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
@@ -26,7 +28,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        // No need to initialize mocks as @ExtendWith(MockitoExtension.class) handles it
     }
 
     @Test
@@ -79,7 +81,7 @@ class UserServiceTest {
         // Given
         User user = new User();
         user.setId(1L);
-        when(userRepository.findByUserWxid("test_wxid")).thenReturn(user);
+        when(userRepository.findByWxid("test_wxid")).thenReturn(user);
 
         // When
         User result = userService.getUserByWxid("test_wxid");
@@ -87,7 +89,7 @@ class UserServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        verify(userRepository).findByUserWxid("test_wxid");
+        verify(userRepository).findByWxid("test_wxid");
     }
 
     @Test
@@ -160,26 +162,26 @@ class UserServiceTest {
     @Test
     void existsByWxid_ShouldReturnTrue() {
         // Given
-        when(userRepository.existsByUserWxid("test_wxid")).thenReturn(true);
+        when(userRepository.existsByWxid("test_wxid")).thenReturn(true);
 
         // When
         boolean result = userService.existsByWxid("test_wxid");
 
         // Then
         assertTrue(result);
-        verify(userRepository).existsByUserWxid("test_wxid");
+        verify(userRepository).existsByWxid("test_wxid");
     }
 
     @Test
     void existsByWxid_ShouldReturnFalse() {
         // Given
-        when(userRepository.existsByUserWxid("test_wxid")).thenReturn(false);
+        when(userRepository.existsByWxid("test_wxid")).thenReturn(false);
 
         // When
         boolean result = userService.existsByWxid("test_wxid");
 
         // Then
         assertFalse(result);
-        verify(userRepository).existsByUserWxid("test_wxid");
+        verify(userRepository).existsByWxid("test_wxid");
     }
 } 
