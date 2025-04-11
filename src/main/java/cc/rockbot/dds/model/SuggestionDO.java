@@ -2,8 +2,8 @@ package cc.rockbot.dds.model;
 
 import cc.rockbot.dds.converter.SuggestionStatusEnumConverter;
 import cc.rockbot.dds.enums.SuggestionStatusEnum;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 

@@ -1,7 +1,7 @@
 package cc.rockbot.dds.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 

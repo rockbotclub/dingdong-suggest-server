@@ -1,8 +1,8 @@
 package cc.rockbot.dds.converter;
 
 import cc.rockbot.dds.enums.SuggestionStatusEnum;
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 /**
  * 建议状态枚举转换器

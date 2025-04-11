@@ -9,7 +9,7 @@ import cc.rockbot.dds.dto.WxLoginRequest;
 import cc.rockbot.dds.dto.WxLoginResponse;
 import cc.rockbot.dds.service.AuthService;
 import cc.rockbot.dds.service.WxService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
