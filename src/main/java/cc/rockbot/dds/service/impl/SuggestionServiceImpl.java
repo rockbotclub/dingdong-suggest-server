@@ -1,10 +1,13 @@
 package cc.rockbot.dds.service.impl;
 
+import cc.rockbot.dds.dto.ProblemImage;
 import cc.rockbot.dds.dto.SuggestionRequest;
 import cc.rockbot.dds.dto.SuggestionResponse;
+import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import cc.rockbot.dds.model.SuggestionDO;
 import cc.rockbot.dds.repository.SuggestionRepository;
 import cc.rockbot.dds.service.SuggestionService;
+import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,11 +31,12 @@ public class SuggestionServiceImpl implements SuggestionService {
         suggestion.setProblemAnalysis(request.getProblemAnalysis());
         suggestion.setSuggestion(request.getSuggestion());
         suggestion.setExpectedOutcome(request.getExpectedOutcome());
-        suggestion.setStatus(1); // Using Integer for status
+        suggestion.setStatus(SuggestionStatusEnum.SUBMITTED);
         suggestion.setGmtCreate(LocalDateTime.now());
         suggestion.setGmtModified(LocalDateTime.now());
         suggestion.setUserWxid(request.getUserWxid());
         suggestion.setOrgId(request.getOrgId());
+        suggestion.setImageUrls(JSON.toJSONString(request.getImages()));
 
         suggestion = suggestionRepository.save(suggestion);
         return convertToResponse(suggestion);
@@ -44,7 +48,14 @@ public class SuggestionServiceImpl implements SuggestionService {
         SuggestionDO suggestion = suggestionRepository.findById(suggestionId)
                 .orElseThrow(() -> new RuntimeException("Suggestion not found"));
 
-        suggestion.setStatus(Integer.parseInt(status));
+        SuggestionStatusEnum newStatus;
+        try {
+            newStatus = SuggestionStatusEnum.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + status);
+        }
+
+        suggestion.setStatus(newStatus);
         suggestion.setGmtModified(LocalDateTime.now());
         suggestionRepository.save(suggestion);
     }
@@ -68,9 +79,9 @@ public class SuggestionServiceImpl implements SuggestionService {
         suggestion.setProblemAnalysis(request.getProblemAnalysis());
         suggestion.setSuggestion(request.getSuggestion());
         suggestion.setExpectedOutcome(request.getExpectedOutcome());
-        suggestion.setUserWxid(request.getUserWxid());
         suggestion.setOrgId(request.getOrgId());
         suggestion.setGmtModified(LocalDateTime.now());
+        suggestion.setImageUrls(JSON.toJSONString(request.getImages()));
 
         suggestion = suggestionRepository.save(suggestion);
         return convertToResponse(suggestion);
@@ -101,11 +112,13 @@ public class SuggestionServiceImpl implements SuggestionService {
         response.setProblemAnalysis(suggestion.getProblemAnalysis());
         response.setSuggestion(suggestion.getSuggestion());
         response.setExpectedOutcome(suggestion.getExpectedOutcome());
-        response.setStatus(suggestion.getStatus());
+        response.setStatus(suggestion.getStatus().getCode());
+        response.setStatusDescription(suggestion.getStatus().getDescription());
         response.setCreateTime(suggestion.getGmtCreate());
         response.setUpdateTime(suggestion.getGmtModified());
         response.setUserWxid(suggestion.getUserWxid());
         response.setOrgId(suggestion.getOrgId());
+        response.setImages(JSON.parseArray(suggestion.getImageUrls(), ProblemImage.class));
         return response;
     }
 } 

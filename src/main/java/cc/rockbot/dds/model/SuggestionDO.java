@@ -1,5 +1,7 @@
 package cc.rockbot.dds.model;
 
+import cc.rockbot.dds.converter.SuggestionStatusEnumConverter;
+import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -48,7 +50,8 @@ public class SuggestionDO {
 
     @NotNull(message = "Status cannot be null")
     @Column(name = "status", nullable = false)
-    private Integer status;
+    @Convert(converter = SuggestionStatusEnumConverter.class)
+    private SuggestionStatusEnum status;
 
     @NotBlank(message = "Organization ID cannot be empty")
     @Size(max = 255, message = "Organization ID must be less than 255 characters")

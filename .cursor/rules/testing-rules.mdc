@@ -1,10 +1,39 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: true
 ---
 
-# Your rule content
+## 5. Testing Approaches
 
-- You can @ files here
-- You can use markdown but dont have to
+### 5.1. Unit Testing
+
+- **Test Individual Components:** Unit tests should focus on testing individual components (e.g., page objects, utilities) in isolation.
+- **Mock External Dependencies:** Mock external dependencies (e.g., WebDriver, APIs) to isolate the component being tested.
+- **Assert Expected Behavior:** Use assertions to verify that the component behaves as expected.
+- **Test Edge Cases:** Test edge cases and error conditions to ensure that the component is robust.
+
+### 5.2. Integration Testing
+
+- **Test Interactions Between Components:** Integration tests should focus on testing the interactions between different components.
+- **Use Real Dependencies:** Use real dependencies (e.g., WebDriver) to test the component's behavior in a realistic environment.
+- **Verify System Behavior:** Verify that the system as a whole behaves as expected.
+
+### 5.3. End-to-End Testing
+
+- **Test Complete Workflows:** End-to-end tests should focus on testing complete workflows from start to finish.
+- **Simulate User Interactions:** Simulate user interactions to test the system's behavior in a realistic scenario.
+- **Verify Business Requirements:** Verify that the system meets the business requirements.
+
+### 5.4. Test Organization
+
+- **Separate Test Files:** Create separate test files for each component or feature.
+- **Use Descriptive Names:** Use descriptive names for test files and test functions.
+- **Group Tests:** Group related tests into test suites or test classes.
+- **Use Test Fixtures:** Use test fixtures to set up and tear down test environments consistently.
+
+### 5.5. Mocking and Stubbing
+
+- **Mock WebDriver:** Mock the WebDriver instance to isolate components from the browser.
+- **Stub API Responses:** Stub API responses to test the component's behavior with different data.
+- **Verify Method Calls:** Verify that methods are called with the expected arguments.

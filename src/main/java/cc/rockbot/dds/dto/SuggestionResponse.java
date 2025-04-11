@@ -1,5 +1,6 @@
 package cc.rockbot.dds.dto;
 
+import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -31,15 +32,21 @@ public class SuggestionResponse extends SuggestionRequest {
 
     /**
      * 建议状态
-     * 0: 待处理
-     * 1: 处理中
-     * 2: 已完成
-     * 不能为空，取值范围0-2
+     * 0: 已提交
+     * 1: 已批准
+     * 2: 已拒绝
+     * 3: 已实施
+     * 不能为空，取值范围0-3
      */
     @NotNull(message = "状态不能为空")
     @Min(value = 0, message = "状态值不能小于0")
-    @Max(value = 2, message = "状态值不能大于2")
+    @Max(value = 3, message = "状态值不能大于3")
     private Integer status;
+
+    /**
+     * 建议状态描述
+     */
+    private String statusDescription;
 
     /**
      * 创建时间

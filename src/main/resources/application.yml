@@ -24,6 +24,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
+  application:
+    name: dds
 
 logging:
   level:
@@ -39,3 +41,27 @@ tencent:
 
 mybatis:
   mapper-locations: classpath*:mapper/*Mapper.xml
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: cc.rockbot.dds.controller
+
+# JWT配置
+jwt:
+  secret: your-secret-key-here-must-be-at-least-256-bits-long
+  expiration: 86400000 # 24小时
+
+# 微信小程序配置
+wx:
+  miniapp:
+    appid: ${WX_APPID}
+    secret: ${WX_SECRET}

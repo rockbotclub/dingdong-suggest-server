@@ -3,11 +3,11 @@ package cc.rockbot.dds.service;
 import cc.rockbot.dds.dto.ProblemImage;
 import cc.rockbot.dds.dto.SuggestionRequest;
 import cc.rockbot.dds.dto.SuggestionResponse;
+import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import cc.rockbot.dds.model.SuggestionDO;
 import cc.rockbot.dds.repository.SuggestionRepository;
 import cc.rockbot.dds.service.impl.SuggestionServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,9 +34,6 @@ class SuggestionServiceTest {
     @Mock
     private SuggestionRepository suggestionRepository;
 
-    @Mock
-    private ObjectMapper objectMapper;
-
     @InjectMocks
     private SuggestionServiceImpl suggestionService;
 
@@ -50,7 +47,7 @@ class SuggestionServiceTest {
      * 在每个测试方法执行前设置测试数据
      */
     @BeforeEach
-    void setUp() throws JsonProcessingException {
+    void setUp() {
         // 初始化问题图片对象
         problemImage = new ProblemImage();
         problemImage.setUrl("https://example.com/image.jpg");
@@ -58,7 +55,7 @@ class SuggestionServiceTest {
 
         // 初始化图片URL JSON
         List<ProblemImage> images = Collections.singletonList(problemImage);
-        imageUrlsJson = new ObjectMapper().writeValueAsString(images);
+        imageUrlsJson = JSON.toJSONString(images);
 
         // 初始化建议实体对象
         suggestion = new SuggestionDO();
@@ -68,7 +65,7 @@ class SuggestionServiceTest {
         suggestion.setProblemAnalysis("Test Problem Analysis");
         suggestion.setSuggestion("Test Suggestion");
         suggestion.setExpectedOutcome("Test Expected Outcome");
-        suggestion.setStatus(1);
+        suggestion.setStatus(SuggestionStatusEnum.SUBMITTED);
         suggestion.setGmtCreate(LocalDateTime.now());
         suggestion.setGmtModified(LocalDateTime.now());
         suggestion.setUserWxid("test_wxid");
@@ -92,10 +89,8 @@ class SuggestionServiceTest {
      * 验证创建建议时是否正确保存并返回建议对象
      */
     @Test
-    void createSuggestion_ShouldCreateNewSuggestion() throws JsonProcessingException {
+    void createSuggestion_ShouldCreateNewSuggestion() {
         when(suggestionRepository.save(any(SuggestionDO.class))).thenReturn(suggestion);
-        when(objectMapper.writeValueAsString(any())).thenReturn(imageUrlsJson);
-        when(objectMapper.readValue(anyString(), any(Class.class))).thenReturn(Collections.singletonList(problemImage));
 
         SuggestionResponse response = suggestionService.createSuggestion(request);
 
@@ -105,7 +100,8 @@ class SuggestionServiceTest {
         assertEquals("Test Problem Analysis", response.getProblemAnalysis());
         assertEquals("Test Suggestion", response.getSuggestion());
         assertEquals("Test Expected Outcome", response.getExpectedOutcome());
-        assertEquals(1, response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getCode(), response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getDescription(), response.getStatusDescription());
         assertEquals("test_wxid", response.getUserWxid());
         assertEquals("test_org", response.getOrgId());
         assertNotNull(response.getImages());
@@ -119,9 +115,8 @@ class SuggestionServiceTest {
      * 验证通过ID查询建议时是否正确返回建议对象
      */
     @Test
-    void getSuggestionById_ShouldReturnSuggestion() throws JsonProcessingException {
+    void getSuggestionById_ShouldReturnSuggestion() {
         when(suggestionRepository.findById(1L)).thenReturn(java.util.Optional.of(suggestion));
-        when(objectMapper.readValue(anyString(), any(Class.class))).thenReturn(Collections.singletonList(problemImage));
 
         SuggestionResponse response = suggestionService.getSuggestionById(1L);
 
@@ -132,7 +127,8 @@ class SuggestionServiceTest {
         assertEquals("Test Problem Analysis", response.getProblemAnalysis());
         assertEquals("Test Suggestion", response.getSuggestion());
         assertEquals("Test Expected Outcome", response.getExpectedOutcome());
-        assertEquals(1, response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getCode(), response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getDescription(), response.getStatusDescription());
         assertEquals("test_wxid", response.getUserWxid());
         assertEquals("test_org", response.getOrgId());
         assertNotNull(response.getImages());
@@ -145,10 +141,9 @@ class SuggestionServiceTest {
      * 验证获取所有建议时是否正确返回建议列表
      */
     @Test
-    void getAllSuggestions_ShouldReturnAllSuggestions() throws JsonProcessingException {
+    void getAllSuggestions_ShouldReturnAllSuggestions() {
         List<SuggestionDO> suggestions = Arrays.asList(suggestion);
         when(suggestionRepository.findAll()).thenReturn(suggestions);
-        when(objectMapper.readValue(anyString(), any(Class.class))).thenReturn(Collections.singletonList(problemImage));
 
         List<SuggestionResponse> responses = suggestionService.getAllSuggestions();
 
@@ -161,7 +156,8 @@ class SuggestionServiceTest {
         assertEquals("Test Problem Analysis", response.getProblemAnalysis());
         assertEquals("Test Suggestion", response.getSuggestion());
         assertEquals("Test Expected Outcome", response.getExpectedOutcome());
-        assertEquals(1, response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getCode(), response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getDescription(), response.getStatusDescription());
         assertEquals("test_wxid", response.getUserWxid());
         assertEquals("test_org", response.getOrgId());
         assertNotNull(response.getImages());
@@ -174,11 +170,9 @@ class SuggestionServiceTest {
      * 验证更新建议时是否正确更新并返回更新后的建议对象
      */
     @Test
-    void updateSuggestion_ShouldUpdateSuggestion() throws JsonProcessingException {
+    void updateSuggestion_ShouldUpdateSuggestion() {
         when(suggestionRepository.findById(1L)).thenReturn(java.util.Optional.of(suggestion));
         when(suggestionRepository.save(any(SuggestionDO.class))).thenReturn(suggestion);
-        when(objectMapper.writeValueAsString(any())).thenReturn(imageUrlsJson);
-        when(objectMapper.readValue(anyString(), any(Class.class))).thenReturn(Collections.singletonList(problemImage));
 
         SuggestionResponse response = suggestionService.updateSuggestion(1L, request);
 
@@ -189,7 +183,8 @@ class SuggestionServiceTest {
         assertEquals("Test Problem Analysis", response.getProblemAnalysis());
         assertEquals("Test Suggestion", response.getSuggestion());
         assertEquals("Test Expected Outcome", response.getExpectedOutcome());
-        assertEquals(1, response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getCode(), response.getStatus());
+        assertEquals(SuggestionStatusEnum.SUBMITTED.getDescription(), response.getStatusDescription());
         assertEquals("test_wxid", response.getUserWxid());
         assertEquals("test_org", response.getOrgId());
         assertNotNull(response.getImages());
@@ -245,5 +240,31 @@ class SuggestionServiceTest {
 
         assertThrows(RuntimeException.class, () -> suggestionService.deleteSuggestion(1L));
         verify(suggestionRepository, never()).deleteById(1L);
+    }
+
+    /**
+     * 测试更新建议状态功能
+     * 验证更新建议状态时是否正确更新
+     */
+    @Test
+    void updateSuggestionStatus_ShouldUpdateStatus() {
+        when(suggestionRepository.findById(1L)).thenReturn(java.util.Optional.of(suggestion));
+        when(suggestionRepository.save(any(SuggestionDO.class))).thenReturn(suggestion);
+
+        suggestionService.updateSuggestionStatus(1L, "APPROVED");
+
+        verify(suggestionRepository).save(any(SuggestionDO.class));
+    }
+
+    /**
+     * 测试使用无效状态更新建议状态时抛出异常
+     * 验证当使用无效状态更新时是否正确抛出异常
+     */
+    @Test
+    void updateSuggestionStatus_WithInvalidStatus_ShouldThrowException() {
+        when(suggestionRepository.findById(1L)).thenReturn(java.util.Optional.of(suggestion));
+
+        assertThrows(RuntimeException.class, () -> suggestionService.updateSuggestionStatus(1L, "INVALID_STATUS"));
+        verify(suggestionRepository, never()).save(any(SuggestionDO.class));
     }
 } 
