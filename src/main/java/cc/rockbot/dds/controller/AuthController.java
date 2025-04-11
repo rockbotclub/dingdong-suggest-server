@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
@@ -39,12 +39,18 @@ public class AuthController {
 
     @PostMapping("/login-wx")
     public ResponseEntity<WxLoginResponse> loginWx(@Valid @RequestBody WxLoginRequest request) {
+        if (request.getCode() == null || request.getCode().trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok(wxService.login(request.getCode()));
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<String> refreshToken(@RequestHeader("Authorization") String token) {
-        String wxid = token.substring(7); // 去掉 "Bearer " 前缀
+        if (!token.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().build();
+        }
+        String wxid = token.substring(7); // Remove "Bearer " prefix
         return ResponseEntity.ok(wxService.refreshToken(wxid));
     }
 
@@ -52,7 +58,10 @@ public class AuthController {
     public ResponseEntity<WxLoginResponse> updateUserInfo(
             @RequestHeader("Authorization") String token,
             @Valid @RequestBody UpdateUserInfoRequest request) {
-        String wxid = token.substring(7); // 去掉 "Bearer " 前缀
+        if (!token.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().build();
+        }
+        String wxid = token.substring(7); // Remove "Bearer " prefix
         return ResponseEntity.ok(wxService.updateUserInfo(wxid, request));
     }
 } 

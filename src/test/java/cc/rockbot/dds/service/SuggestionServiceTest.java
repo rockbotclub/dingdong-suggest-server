@@ -267,4 +267,23 @@ class SuggestionServiceTest {
         assertThrows(RuntimeException.class, () -> suggestionService.updateSuggestionStatus(1L, "INVALID_STATUS"));
         verify(suggestionRepository, never()).save(any(SuggestionDO.class));
     }
+
+    @Test
+    void updateSuggestionStatus_ToWithdrawn_ShouldUpdateStatus() {
+        when(suggestionRepository.findById(1L)).thenReturn(java.util.Optional.of(suggestion));
+        when(suggestionRepository.save(any(SuggestionDO.class))).thenReturn(suggestion);
+
+        suggestionService.updateSuggestionStatus(1L, "WITHDRAWN");
+
+        verify(suggestionRepository).save(any(SuggestionDO.class));
+    }
+
+    @Test
+    void updateSuggestionStatus_ToWithdrawn_WhenAlreadyApproved_ShouldThrowException() {
+        suggestion.setStatus(SuggestionStatusEnum.APPROVED);
+        when(suggestionRepository.findById(1L)).thenReturn(java.util.Optional.of(suggestion));
+
+        assertThrows(RuntimeException.class, () -> suggestionService.updateSuggestionStatus(1L, "WITHDRAWN"));
+        verify(suggestionRepository, never()).save(any(SuggestionDO.class));
+    }
 } 

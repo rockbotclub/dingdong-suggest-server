@@ -9,9 +9,10 @@ import lombok.Getter;
 @Getter
 public enum SuggestionStatusEnum {
     SUBMITTED(0, "已提交"),
-    APPROVED(1, "已批准"),
-    REJECTED(2, "已拒绝"),
-    IMPLEMENTED(3, "已实施");
+    WITHDRAWN(1, "已撤销"),
+    APPROVED(2, "已批准"),
+    REJECTED(3, "已拒绝"),
+    IMPLEMENTED(4, "已实施");
 
     private final int code;
     private final String description;

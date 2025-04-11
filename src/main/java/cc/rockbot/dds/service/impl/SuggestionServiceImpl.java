@@ -55,6 +55,11 @@ public class SuggestionServiceImpl implements SuggestionService {
             throw new RuntimeException("Invalid status: " + status);
         }
 
+        // Business rules for status transitions
+        if (suggestion.getStatus() == SuggestionStatusEnum.APPROVED && newStatus == SuggestionStatusEnum.WITHDRAWN) {
+            throw new RuntimeException("Cannot withdraw an approved suggestion");
+        }
+
         suggestion.setStatus(newStatus);
         suggestion.setGmtModified(LocalDateTime.now());
         suggestionRepository.save(suggestion);

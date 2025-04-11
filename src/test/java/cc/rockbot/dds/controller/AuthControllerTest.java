@@ -50,7 +50,7 @@ class AuthControllerTest {
         when(wxService.login(anyString())).thenReturn(response);
 
         // 执行测试
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/login-wx")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSON.toJSONString(request)))
                 .andExpect(status().isOk())
@@ -70,7 +70,7 @@ class AuthControllerTest {
         request.setCode(""); // 空code，应该触发验证错误
 
         // 执行测试
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/auth/login-wx")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSON.toJSONString(request)))
                 .andExpect(status().isBadRequest());

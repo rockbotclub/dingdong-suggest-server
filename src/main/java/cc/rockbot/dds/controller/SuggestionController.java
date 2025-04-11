@@ -89,4 +89,22 @@ public class SuggestionController {
         suggestionService.updateSuggestionStatus(id, status);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}/withdraw")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> withdrawSuggestion(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        SuggestionResponse existing = suggestionService.getSuggestionById(id);
+        // 检查是否是建议的创建者
+        if (!existing.getUserWxid().equals(userDetails.getUsername())) {
+            throw new RuntimeException("Only the creator can withdraw the suggestion");
+        }
+        // 检查建议状态是否为已提交
+        if (existing.getStatus() != 0) {
+            throw new RuntimeException("Only submitted suggestions can be withdrawn");
+        }
+        suggestionService.updateSuggestionStatus(id, "WITHDRAWN");
+        return ResponseEntity.ok().build();
+    }
 } 
