@@ -114,8 +114,7 @@ Response:
         "organizationName": "组织名称",
         "status": "状态",
         "createTime": "创建时间",
-        "updateTime": "更新时间",
-        "feedbacks": []
+        "updateTime": "更新时间"
     }
 }
 ```
@@ -153,22 +152,6 @@ POST /api/v1/suggestions/{suggestionId}/status
 Request:
 {
     "status": "approved/rejected/revoked"
-}
-Response:
-{
-    "code": 200,
-    "data": {
-        "success": true
-    }
-}
-```
-
-### 2.5 提交反馈
-```java
-POST /api/v1/suggestions/{suggestionId}/feedback
-Request:
-{
-    "content": "反馈内容"
 }
 Response:
 {

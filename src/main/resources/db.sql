@@ -1,11 +1,3 @@
-CREATE TABLE `Counters` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `count` int(11) NOT NULL DEFAULT '1',
-  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
-
 CREATE TABLE `admins` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `gmt_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -63,15 +55,3 @@ CREATE TABLE `users` (
   UNIQUE KEY `uk_wxid` (`wxid`) USING BTREE,
   KEY `idx_org_id` (`org_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表';
-
-CREATE TABLE `feedbacks` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `gmt_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `gmt_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-  `content` text NOT NULL COMMENT '反馈内容',
-  `author` varchar(255) NOT NULL DEFAULT '' COMMENT '反馈作者',
-  `suggestion_id` bigint(20) NOT NULL COMMENT '关联的建议ID',
-  PRIMARY KEY (`id`),
-  KEY `idx_suggestion_id` (`suggestion_id`) USING BTREE,
-  CONSTRAINT `fk_feedback_suggestion` FOREIGN KEY (`suggestion_id`) REFERENCES `suggestions` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='建议反馈表';
