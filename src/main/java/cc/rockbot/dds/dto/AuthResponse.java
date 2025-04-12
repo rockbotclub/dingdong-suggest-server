@@ -4,7 +4,9 @@ import lombok.Data;
 
 @Data
 public class AuthResponse {
-    private UserInfo userInfo;
+    private boolean success;
+    private String message;
+    private UserInfo data;
 
     @Data
     public static class UserInfo {

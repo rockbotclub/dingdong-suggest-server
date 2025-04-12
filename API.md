@@ -1,164 +1,250 @@
-# 叮咚建议小程序后端API文档
+# API Documentation
 
-## 1. 用户认证相关接口
+## Base URL
+```
+https://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com/api
+```
 
-### 1.1 微信登录
-```java
-POST /api/v1/auth/login
-Request:
+## Authentication
+All authenticated endpoints require a Bearer token in the Authorization header:
+```
+Authorization: Bearer your-token-here
+```
+
+## API Endpoints
+
+### Authentication
+
+#### 1. 微信登录
+- **URL**: `/auth/login-wx`
+- **Method**: `POST`
+- **Request Body**:
+```json
 {
-    "code": "微信登录code",
-    "phoneCode": "手机号授权code"  // 可选
+    "code": "string" // 微信登录code
 }
-Response:
+```
+- **Response**:
+```json
 {
-    "code": 200,
-    "data": {
-        "userInfo": {
-            "nickName": "微信昵称",
-            "avatarUrl": "头像URL",
-            "organizationId": "组织ID",
-            "organizationName": "组织名称"
-        }
-    }
+    "token": "string",
+    "wxid": "string",
+    "userName": "string",
+    "userOrg": "string",
+    "userPhone": "string",
+    "status": 0,
+    "orgId": "string"
 }
 ```
 
-### 1.2 发送验证码
-```java
-POST /api/v1/auth/send-verification-code
-Request:
+#### 2. 刷新Token
+- **URL**: `/auth/refresh-token`
+- **Method**: `POST`
+- **Headers**:
+  - `Authorization: Bearer your-token`
+- **Response**: `string` (new token)
+
+#### 3. 更新用户信息
+- **URL**: `/auth/update-user-info`
+- **Method**: `POST`
+- **Headers**:
+  - `Authorization: Bearer your-token`
+- **Request Body**:
+```json
 {
-    "phone": "手机号"
+    "userName": "string",
+    "userOrg": "string",
+    "userPhone": "string",
+    "orgId": "string"
 }
-Response:
+```
+- **Response**:
+```json
 {
-    "code": 200,
-    "data": {
-        "success": true
-    }
+    "token": "string",
+    "wxid": "string",
+    "userName": "string",
+    "userOrg": "string",
+    "userPhone": "string",
+    "status": 0,
+    "orgId": "string"
 }
 ```
 
-### 1.3 用户注册
-```java
-POST /api/v1/auth/register
-Request:
+### Suggestions
+
+#### 1. 创建建议
+- **URL**: `/v1/suggestions`
+- **Method**: `POST`
+- **Headers**:
+  - `Authorization: Bearer your-token`
+- **Request Body**: `SuggestionRequest`
+- **Response**: `SuggestionResponse`
+
+#### 2. 获取建议详情
+- **URL**: `/v1/suggestions/{id}`
+- **Method**: `GET`
+- **Headers**:
+  - `Authorization: Bearer your-token`
+- **Response**: `SuggestionResponse`
+
+#### 3. 更新建议
+- **URL**: `/v1/suggestions/{id}`
+- **Method**: `PUT`
+- **Headers**:
+  - `Authorization: Bearer your-token`
+- **Request Body**: `SuggestionRequest`
+- **Response**: `void`
+
+#### 4. 删除建议
+- **URL**: `/v1/suggestions/{id}`
+- **Method**: `DELETE`
+- **Headers**:
+  - `Authorization: Bearer your-token`
+- **Response**: `void`
+
+#### 5. 获取所有建议
+- **URL**: `/v1/suggestions`
+- **Method**: `GET`
+- **Headers**:
+  - `Authorization: Bearer your-token`
+- **Response**: `List<SuggestionResponse>`
+
+### Organizations
+
+#### 1. 创建组织
+- **URL**: `/organizations`
+- **Method**: `POST`
+- **Request Body**: `OrganizationDO`
+- **Response**: `OrganizationDO`
+
+#### 2. 获取组织详情
+- **URL**: `/organizations/{id}`
+- **Method**: `GET`
+- **Response**: `OrganizationDO`
+
+#### 3. 获取所有组织
+- **URL**: `/organizations`
+- **Method**: `GET`
+- **Response**: `List<OrganizationDO>`
+
+#### 4. 更新组织
+- **URL**: `/organizations/{id}`
+- **Method**: `PUT`
+- **Request Body**: `OrganizationDO`
+- **Response**: `OrganizationDO`
+
+#### 5. 删除组织
+- **URL**: `/organizations/{id}`
+- **Method**: `DELETE`
+- **Response**: `void`
+
+### Users
+
+#### 1. 创建用户
+- **URL**: `/users`
+- **Method**: `POST`
+- **Request Body**: `UserDO`
+- **Response**: `UserDO`
+
+#### 2. 获取用户详情
+- **URL**: `/users/{id}`
+- **Method**: `GET`
+- **Response**: `UserDO`
+
+#### 3. 根据微信ID获取用户
+- **URL**: `/users/wxid/{userWxid}`
+- **Method**: `GET`
+- **Response**: `UserDO`
+
+#### 4. 获取组织下的所有用户
+- **URL**: `/users/org/{orgId}`
+- **Method**: `GET`
+- **Response**: `List<UserDO>`
+
+#### 5. 获取所有用户
+- **URL**: `/users`
+- **Method**: `GET`
+- **Response**: `List<UserDO>`
+
+#### 6. 更新用户
+- **URL**: `/users/{id}`
+- **Method**: `PUT`
+- **Request Body**: `UserDO`
+- **Response**: `UserDO`
+
+#### 7. 删除用户
+- **URL**: `/users/{id}`
+- **Method**: `DELETE`
+- **Response**: `void`
+
+## Data Models
+
+### OrganizationDO
+```json
 {
-    "name": "真实姓名",
-    "department": "所属部门",
-    "phone": "联系电话",
-    "verificationCode": "验证码",
-    "wxid": "微信openid"
-}
-Response:
-{
-    "code": 200,
-    "data": {
-        "userInfo": {
-            "nickName": "微信昵称",
-            "avatarUrl": "头像URL",
-            "organizationId": "组织ID",
-            "organizationName": "组织名称"
-        }
-    }
+    "id": "string",
+    "gmtCreate": "datetime",
+    "gmtModified": "datetime",
+    "orgName": "string",
+    "address": "string"
 }
 ```
 
-## 2. 建议管理相关接口
-
-### 2.1 获取建议列表
-```java
-GET /api/v1/suggestions
-Query Parameters:
-- page: 页码
-- pageSize: 每页数量
-- status: 状态（可选，all/draft/submitted/approved/rejected/implemented）
-- organizationId: 组织ID（可选，管理员可以指定组织）
-Response:
+### UserDO
+```json
 {
-    "code": 200,
-    "data": {
-        "list": [
-            {
-                "id": "建议ID",
-                "title": "建议标题",
-                "status": "状态",
-                "date": "创建时间"
-            }
-        ],
-        "total": 100
-    }
+    "id": "long",
+    "gmtCreate": "datetime",
+    "gmtModified": "datetime",
+    "wxid": "string",
+    "userName": "string",
+    "userOrg": "string",
+    "userPhone": "string",
+    "status": "integer",
+    "orgId": "string"
 }
 ```
 
-### 2.2 获取建议详情
-```java
-GET /api/v1/suggestions/{suggestionId}
-Response:
+## Error Responses
+
+### 400 Bad Request
+```json
 {
-    "code": 200,
-    "data": {
-        "id": "建议ID",
-        "title": "建议标题",
-        "problem": "问题描述",
-        "analysis": "问题分析",
-        "suggestions": ["具体建议1", "具体建议2"],
-        "expectedEffect": "预期效果",
-        "images": ["图片URL1"],
-        "submitterName": "提交人姓名",
-        "submitterDepartment": "提交人部门",
-        "submitterPhone": "提交人电话",
-        "submitterWxid": "提交人微信ID",
-        "organizationId": "组织ID",
-        "organizationName": "组织名称",
-        "status": "状态",
-        "createTime": "创建时间",
-        "updateTime": "更新时间"
-    }
+    "error": "string",
+    "message": "string"
 }
 ```
 
-### 2.3 提交建议
-```java
-POST /api/v1/suggestions
-Request:
+### 401 Unauthorized
+```json
 {
-    "title": "建议标题",
-    "problem": "问题描述",
-    "analysis": "问题分析",
-    "suggestions": ["具体建议1", "具体建议2"],
-    "expectedEffect": "预期效果",
-    "images": ["图片URL1", "图片URL2"],
-    "submitterName": "提交人姓名",
-    "submitterDepartment": "提交人部门",
-    "submitterPhone": "提交人电话",
-    "submitterWxid": "提交人微信ID",
-    "organizationId": "组织ID",
-    "organizationName": "组织名称"
-}
-Response:
-{
-    "code": 200,
-    "data": {
-        "id": "建议ID"
-    }
+    "error": "Unauthorized",
+    "message": "Invalid or expired token"
 }
 ```
 
-### 2.4 更新建议状态
-```java
-POST /api/v1/suggestions/{suggestionId}/status
-Request:
+### 403 Forbidden
+```json
 {
-    "status": "approved/rejected/revoked"
+    "error": "Forbidden",
+    "message": "Access denied"
 }
-Response:
+```
+
+### 404 Not Found
+```json
 {
-    "code": 200,
-    "data": {
-        "success": true
-    }
+    "error": "Not Found",
+    "message": "Resource not found"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+    "error": "Internal Server Error",
+    "message": "An unexpected error occurred"
 }
 ```
 

@@ -2,7 +2,6 @@ package cc.rockbot.dds.controller;
 
 import cc.rockbot.dds.dto.AuthRequest;
 import cc.rockbot.dds.dto.AuthResponse;
-import cc.rockbot.dds.dto.RegisterRequest;
 import cc.rockbot.dds.dto.VerificationCodeRequest;
 import cc.rockbot.dds.dto.UpdateUserInfoRequest;
 import cc.rockbot.dds.dto.WxLoginRequest;
@@ -30,11 +29,6 @@ public class AuthController {
     public ResponseEntity<?> sendVerificationCode(@RequestBody VerificationCodeRequest request) {
         authService.sendVerificationCode(request);
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login-wx")

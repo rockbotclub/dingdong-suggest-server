@@ -30,23 +30,32 @@ public class WxServiceImpl implements WxService {
 
     @Override
     public WxLoginResponse login(String code) {
+        log.info("Starting WeChat login with code: {}", code);
+        
         // 调用微信接口获取openid
         String url = WX_CODE2SESSION_URL
                 .replace("{appid}", wxConfig.getAppid())
                 .replace("{secret}", wxConfig.getSecret())
                 .replace("{code}", code);
 
+        log.info("Calling WeChat API with URL: {}", url);
         String response = restTemplate.getForObject(url, String.class);
+        log.info("WeChat API response: {}", response);
+        
         JSONObject jsonObject = JSON.parseObject(response);
 
         if (jsonObject.containsKey("errcode") && jsonObject.getIntValue("errcode") != 0) {
-            throw new RuntimeException("微信登录失败：" + jsonObject.getString("errmsg"));
+            String errorMsg = "微信登录失败：" + jsonObject.getString("errmsg");
+            log.error(errorMsg);
+            throw new RuntimeException(errorMsg);
         }
 
         String openid = jsonObject.getString("openid");
+        log.info("Successfully obtained openid: {}", openid);
         
         // 查找或创建用户
         UserDO user = userRepository.findByWxid(openid);
+        log.info("User found in database: {}", user != null);
         if (user == null) {
             user = new UserDO();
             user.setWxid(openid);
