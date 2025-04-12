@@ -33,6 +33,7 @@ class SmsServiceTest {
 
             // Then
             assertTrue(result);
+            verify(smsService).sendVerificationCode(validPhone);
         }
 
         @Test
@@ -47,6 +48,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).sendVerificationCode(validPhone);
         }
 
         @Test
@@ -61,6 +63,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).sendVerificationCode(emptyPhone);
         }
 
         @Test
@@ -74,6 +77,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).sendVerificationCode(null);
         }
 
         @Test
@@ -88,6 +92,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).sendVerificationCode(invalidPhone);
         }
     }
 
@@ -107,6 +112,7 @@ class SmsServiceTest {
 
             // Then
             assertTrue(result);
+            verify(smsService).verifyCode(phone, code);
         }
 
         @Test
@@ -122,6 +128,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).verifyCode(phone, code);
         }
 
         @Test
@@ -137,6 +144,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).verifyCode(phone, code);
         }
 
         @Test
@@ -151,6 +159,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).verifyCode(null, code);
         }
 
         @Test
@@ -165,6 +174,7 @@ class SmsServiceTest {
 
             // Then
             assertFalse(result);
+            verify(smsService).verifyCode(phone, null);
         }
     }
 } 

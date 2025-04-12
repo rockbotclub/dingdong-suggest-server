@@ -6,6 +6,7 @@ import cc.rockbot.dds.dto.VerificationCodeRequest;
 import cc.rockbot.dds.service.AuthService;
 import cc.rockbot.dds.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import cc.rockbot.dds.model.UserDO;
@@ -32,12 +33,59 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private SmsService smsService;
 
+    @Value("${wechat.appid}")
+    private String appid;
+
+    @Value("${wechat.secret}")
+    private String secret;
+
     private static final String WX_CODE2SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code";
 
     @Override
     public UserDO login(String wxCode) {
-        // TODO: 实现微信登录逻辑
-        return null;
+        if (wxCode == null || wxCode.isEmpty()) {
+            log.warn("微信登录失败：wxCode为空");
+            return null;
+        }
+
+        try {
+            // 调用微信接口获取openid
+            String url = WX_CODE2SESSION_URL
+                    .replace("{appid}", appid)
+                    .replace("{secret}", secret)
+                    .replace("{code}", wxCode);
+
+            String wxResponse = restTemplate.getForObject(url, String.class);
+            log.info("微信登录请求，url: {}, 响应: {}", url, wxResponse);
+            
+            JSONObject jsonObject = JSON.parseObject(wxResponse);
+
+            // 检查微信接口返回的错误
+            if (jsonObject.containsKey("errcode") && jsonObject.getIntValue("errcode") != 0) {
+                String errorMsg = "微信登录失败：" + jsonObject.getString("errmsg");
+                log.error(errorMsg);
+                return null;
+            }
+
+            String openid = jsonObject.getString("openid");
+            if (openid == null || openid.isEmpty()) {
+                log.error("微信登录失败：未获取到openid");
+                return null;
+            }
+            
+            // 查询数据库中是否存在该用户
+            UserDO user = userRepository.findByWxid(openid);
+            if (user == null) {
+                log.info("新用户登录，openid: {}", openid);
+                return null;
+            }
+
+            log.info("用户登录成功，openid: {}", openid);
+            return user;
+        } catch (Exception e) {
+            log.error("微信登录异常", e);
+            return null;
+        }
     }
 
     @Override

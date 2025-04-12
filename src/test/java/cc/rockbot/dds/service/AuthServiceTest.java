@@ -37,6 +37,7 @@ class AuthServiceTest {
             // Then
             assertNotNull(result);
             assertEquals(expectedUser, result);
+            verify(authService).login(validWxCode);
         }
 
         @Test
@@ -51,6 +52,7 @@ class AuthServiceTest {
 
             // Then
             assertNull(result);
+            verify(authService).login(validWxCode);
         }
 
         @Test
@@ -65,6 +67,7 @@ class AuthServiceTest {
 
             // Then
             assertNull(result);
+            verify(authService).login(emptyWxCode);
         }
 
         @Test
@@ -78,6 +81,7 @@ class AuthServiceTest {
 
             // Then
             assertNull(result);
+            verify(authService).login(null);
         }
     }
 
@@ -99,6 +103,7 @@ class AuthServiceTest {
 
             // Then
             assertTrue(result);
+            verify(authService).verifyVerificationCode(request);
         }
 
         @Test
@@ -116,6 +121,7 @@ class AuthServiceTest {
 
             // Then
             assertFalse(result);
+            verify(authService).verifyVerificationCode(request);
         }
 
         @Test
@@ -133,6 +139,7 @@ class AuthServiceTest {
 
             // Then
             assertFalse(result);
+            verify(authService).verifyVerificationCode(request);
         }
 
         @Test
@@ -146,6 +153,7 @@ class AuthServiceTest {
 
             // Then
             assertFalse(result);
+            verify(authService).verifyVerificationCode(null);
         }
     }
 
@@ -164,6 +172,7 @@ class AuthServiceTest {
 
             // Then
             assertTrue(result);
+            verify(authService).sendVerificationCode(validPhone);
         }
 
         @Test
@@ -178,6 +187,7 @@ class AuthServiceTest {
 
             // Then
             assertFalse(result);
+            verify(authService).sendVerificationCode(invalidPhone);
         }
 
         @Test
@@ -192,6 +202,7 @@ class AuthServiceTest {
 
             // Then
             assertFalse(result);
+            verify(authService).sendVerificationCode(emptyPhone);
         }
 
         @Test
@@ -205,6 +216,7 @@ class AuthServiceTest {
 
             // Then
             assertFalse(result);
+            verify(authService).sendVerificationCode(null);
         }
 
         @Test
@@ -219,6 +231,7 @@ class AuthServiceTest {
 
             // Then
             assertFalse(result);
+            verify(authService).sendVerificationCode(invalidPhone);
         }
     }
 } 
