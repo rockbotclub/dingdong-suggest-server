@@ -1,7 +1,7 @@
 package cc.rockbot.dds.service;
 
 import cc.rockbot.dds.dto.UserVO;
-import cc.rockbot.dds.dto.VerificationCodeRequest;
+import cc.rockbot.dds.dto.UserRegisterRequest;
 
 public interface AuthService {
     /**
@@ -29,7 +29,7 @@ public interface AuthService {
      *      * 如果不一致，则返回false
      *      * 如果redis里边不存在，则返回false
      */
-    boolean verifyVerificationCode(VerificationCodeRequest request);
+    boolean register(UserRegisterRequest request);
 
     /**
      * 发送验证码

@@ -1,7 +1,7 @@
 package cc.rockbot.dds.service.impl;
 
-import cc.rockbot.dds.dto.UserVO;
-import cc.rockbot.dds.dto.VerificationCodeRequest;
+import cc.rockbot.dds.dto.SendVerificationRequest;
+import cc.rockbot.dds.dto.UserRegisterRequest;
 import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
 import cc.rockbot.dds.service.AuthService;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import cc.rockbot.dds.dto.UserVO;
 
 import javax.annotation.Resource;
 import cc.rockbot.dds.util.JwtTokenUtil;
@@ -90,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean verifyVerificationCode(VerificationCodeRequest request) {
+    public boolean register(UserRegisterRequest request) {
         if (request == null || request.getPhone() == null || request.getVerificationCode() == null) {
             return false;
         }
@@ -103,7 +104,11 @@ public class AuthServiceImpl implements AuthService {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             return false;
         }
-        
+        UserDO user = userRepository.findByUserPhone(phoneNumber);
+        if (user == null) {
+            throw new RuntimeException("用户不存在，请联系管理员后台添加");
+        }
+
         return smsService.sendVerificationCode(phoneNumber);
     }
 } 

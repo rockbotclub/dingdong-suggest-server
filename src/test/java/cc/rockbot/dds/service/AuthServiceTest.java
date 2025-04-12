@@ -1,7 +1,7 @@
 package cc.rockbot.dds.service;
 
 import cc.rockbot.dds.dto.UserVO;
-import cc.rockbot.dds.dto.VerificationCodeRequest;
+import cc.rockbot.dds.dto.UserRegisterRequest;
 import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
 import cc.rockbot.dds.service.impl.AuthServiceImpl;
@@ -120,17 +120,16 @@ class AuthServiceTest {
     }
 
     @Test
-    void verifyVerificationCode_ValidCode_ReturnsTrue() {
+    void register_ValidRequest_ReturnsTrue() {
         // Given
-        VerificationCodeRequest request = new VerificationCodeRequest();
+        UserRegisterRequest request = new UserRegisterRequest();
         request.setPhone("13800138000");
         request.setVerificationCode("123456");
-        request.setWxCode("valid_wx_code");
 
         when(smsService.verifyCode(anyString(), anyString())).thenReturn(true);
 
         // When
-        boolean result = authService.verifyVerificationCode(request);
+        boolean result = authService.register(request);
 
         // Then
         assertTrue(result);
@@ -140,17 +139,16 @@ class AuthServiceTest {
     }
 
     @Test
-    void verifyVerificationCode_InvalidCode_ReturnsFalse() {
+    void register_InvalidRequest_ReturnsFalse() {
         // Given
-        VerificationCodeRequest request = new VerificationCodeRequest();
+        UserRegisterRequest request = new UserRegisterRequest();
         request.setPhone("13800138000");
         request.setVerificationCode("wrong_code");
-        request.setWxCode("valid_wx_code");
 
         when(smsService.verifyCode(anyString(), anyString())).thenReturn(false);
 
         // When
-        boolean result = authService.verifyVerificationCode(request);
+        boolean result = authService.register(request);
 
         // Then
         assertFalse(result);
@@ -163,6 +161,10 @@ class AuthServiceTest {
     void sendVerificationCode_ValidPhone_ReturnsTrue() {
         // Given
         String phoneNumber = "13800138000";
+        UserDO mockUser = new UserDO();
+        mockUser.setUserPhone(phoneNumber);
+
+        when(userRepository.findByUserPhone(phoneNumber)).thenReturn(mockUser);
         when(smsService.sendVerificationCode(phoneNumber)).thenReturn(true);
 
         // When
@@ -172,13 +174,32 @@ class AuthServiceTest {
         assertTrue(result);
 
         // Verify
+        verify(userRepository).findByUserPhone(phoneNumber);
         verify(smsService).sendVerificationCode(phoneNumber);
+    }
+
+    @Test
+    void sendVerificationCode_UserNotFound_ThrowsException() {
+        // Given
+        String phoneNumber = "13800138000";
+        when(userRepository.findByUserPhone(phoneNumber)).thenReturn(null);
+
+        // When & Then
+        assertThrows(RuntimeException.class, () -> authService.sendVerificationCode(phoneNumber));
+
+        // Verify
+        verify(userRepository).findByUserPhone(phoneNumber);
+        verify(smsService, never()).sendVerificationCode(anyString());
     }
 
     @Test
     void sendVerificationCode_InvalidPhone_ReturnsFalse() {
         // Given
         String phoneNumber = "invalid_phone";
+        UserDO mockUser = new UserDO();
+        mockUser.setUserPhone(phoneNumber);
+
+        when(userRepository.findByUserPhone(phoneNumber)).thenReturn(mockUser);
         when(smsService.sendVerificationCode(phoneNumber)).thenReturn(false);
 
         // When
@@ -188,6 +209,7 @@ class AuthServiceTest {
         assertFalse(result);
 
         // Verify
+        verify(userRepository).findByUserPhone(phoneNumber);
         verify(smsService).sendVerificationCode(phoneNumber);
     }
 } 

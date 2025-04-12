@@ -11,4 +11,5 @@ public interface UserRepository extends JpaRepository<UserDO, Long> {
     UserDO findByWxid(String wxid);
     boolean existsByWxid(String wxid);
     List<UserDO> findByOrgId(String orgId);
+    UserDO findByUserPhone(String userPhone);
 } 
