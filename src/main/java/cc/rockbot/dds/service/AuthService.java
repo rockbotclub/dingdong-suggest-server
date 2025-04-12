@@ -1,7 +1,7 @@
 package cc.rockbot.dds.service;
 
+import cc.rockbot.dds.dto.UserVO;
 import cc.rockbot.dds.dto.VerificationCodeRequest;
-import cc.rockbot.dds.model.UserDO;
 
 public interface AuthService {
     /**
@@ -15,7 +15,7 @@ public interface AuthService {
      *      * 如果数据库中没有记录，则返回false
      *      * 如果数据库中有记录，则返回true, 并返回用户信息
      */
-    UserDO login(String wxCode);
+    UserVO login(String wxCode);
 
     /**
      * 验证手机号和验证码是否一致

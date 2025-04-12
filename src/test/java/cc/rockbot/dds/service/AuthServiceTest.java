@@ -1,237 +1,193 @@
 package cc.rockbot.dds.service;
 
+import cc.rockbot.dds.dto.UserVO;
 import cc.rockbot.dds.dto.VerificationCodeRequest;
 import cc.rockbot.dds.model.UserDO;
+import cc.rockbot.dds.repository.UserRepository;
+import cc.rockbot.dds.service.impl.AuthServiceImpl;
+import cc.rockbot.dds.service.impl.SmsServiceImpl;
+import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
     @Mock
-    private AuthService authService;
+    private RestTemplate restTemplate;
 
-    @Nested
-    @DisplayName("login method tests")
-    class LoginTests {
-        @Test
-        @DisplayName("should return user when wxCode is valid and user exists")
-        void login_ValidWxCode_UserExists_ReturnsUser() {
-            // Given
-            String validWxCode = "valid_wx_code";
-            UserDO expectedUser = new UserDO();
-            when(authService.login(validWxCode)).thenReturn(expectedUser);
+    @Mock
+    private UserRepository userRepository;
 
-            // When
-            UserDO result = authService.login(validWxCode);
+    @Mock
+    private SmsServiceImpl smsService;
 
-            // Then
-            assertNotNull(result);
-            assertEquals(expectedUser, result);
-            verify(authService).login(validWxCode);
-        }
+    @InjectMocks
+    private AuthServiceImpl authService;
 
-        @Test
-        @DisplayName("should return null when wxCode is valid but user doesn't exist")
-        void login_ValidWxCode_UserNotExists_ReturnsNull() {
-            // Given
-            String validWxCode = "valid_wx_code";
-            when(authService.login(validWxCode)).thenReturn(null);
-
-            // When
-            UserDO result = authService.login(validWxCode);
-
-            // Then
-            assertNull(result);
-            verify(authService).login(validWxCode);
-        }
-
-        @Test
-        @DisplayName("should handle empty wxCode")
-        void login_EmptyWxCode_ReturnsNull() {
-            // Given
-            String emptyWxCode = "";
-            when(authService.login(emptyWxCode)).thenReturn(null);
-
-            // When
-            UserDO result = authService.login(emptyWxCode);
-
-            // Then
-            assertNull(result);
-            verify(authService).login(emptyWxCode);
-        }
-
-        @Test
-        @DisplayName("should handle null wxCode")
-        void login_NullWxCode_ReturnsNull() {
-            // Given
-            when(authService.login(null)).thenReturn(null);
-
-            // When
-            UserDO result = authService.login(null);
-
-            // Then
-            assertNull(result);
-            verify(authService).login(null);
-        }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        // 设置微信配置
+        ReflectionTestUtils.setField(authService, "appid", "test_appid");
+        ReflectionTestUtils.setField(authService, "secret", "test_secret");
     }
 
-    @Nested
-    @DisplayName("verifyVerificationCode method tests")
-    class VerifyVerificationCodeTests {
-        @Test
-        @DisplayName("should return true when verification code matches")
-        void verifyVerificationCode_CodeMatches_ReturnsTrue() {
-            // Given
-            VerificationCodeRequest request = new VerificationCodeRequest();
-            request.setPhone("13800138000");
-            request.setVerificationCode("123456");
-            request.setWxCode("valid_wx_code");
-            when(authService.verifyVerificationCode(request)).thenReturn(true);
+    @Test
+    void login_ValidWxCode_ReturnsUserVO() {
+        // Given
+        String wxCode = "valid_wx_code";
+        String openid = "test_openid";
+        UserDO mockUser = new UserDO();
+        mockUser.setId(1L);
+        mockUser.setWxid(openid);
+        mockUser.setUserName("Test User");
 
-            // When
-            boolean result = authService.verifyVerificationCode(request);
+        JSONObject mockResponse = new JSONObject();
+        mockResponse.put("openid", openid);
+        mockResponse.put("session_key", "test_session_key");
 
-            // Then
-            assertTrue(result);
-            verify(authService).verifyVerificationCode(request);
-        }
+        when(restTemplate.getForObject(anyString(), any())).thenReturn(mockResponse.toJSONString());
+        when(userRepository.findByWxid(openid)).thenReturn(mockUser);
 
-        @Test
-        @DisplayName("should return false when verification code doesn't match")
-        void verifyVerificationCode_CodeNotMatches_ReturnsFalse() {
-            // Given
-            VerificationCodeRequest request = new VerificationCodeRequest();
-            request.setPhone("13800138000");
-            request.setVerificationCode("wrong_code");
-            request.setWxCode("valid_wx_code");
-            when(authService.verifyVerificationCode(request)).thenReturn(false);
+        // When
+        UserVO result = authService.login(wxCode);
 
-            // When
-            boolean result = authService.verifyVerificationCode(request);
+        // Then
+        assertNotNull(result);
+        assertEquals(mockUser.getId(), result.getUser().getId());
+        assertEquals(mockUser.getWxid(), result.getUser().getWxid());
+        assertEquals(mockUser.getUserName(), result.getUser().getUserName());
+        assertNotNull(result.getToken());
 
-            // Then
-            assertFalse(result);
-            verify(authService).verifyVerificationCode(request);
-        }
-
-        @Test
-        @DisplayName("should return false when verification code expired")
-        void verifyVerificationCode_CodeExpired_ReturnsFalse() {
-            // Given
-            VerificationCodeRequest request = new VerificationCodeRequest();
-            request.setPhone("13800138000");
-            request.setVerificationCode("123456");
-            request.setWxCode("valid_wx_code");
-            when(authService.verifyVerificationCode(request)).thenReturn(false);
-
-            // When
-            boolean result = authService.verifyVerificationCode(request);
-
-            // Then
-            assertFalse(result);
-            verify(authService).verifyVerificationCode(request);
-        }
-
-        @Test
-        @DisplayName("should handle null request")
-        void verifyVerificationCode_NullRequest_ReturnsFalse() {
-            // Given
-            when(authService.verifyVerificationCode(null)).thenReturn(false);
-
-            // When
-            boolean result = authService.verifyVerificationCode(null);
-
-            // Then
-            assertFalse(result);
-            verify(authService).verifyVerificationCode(null);
-        }
+        // Verify
+        verify(restTemplate).getForObject(anyString(), any());
+        verify(userRepository).findByWxid(openid);
     }
 
-    @Nested
-    @DisplayName("sendVerificationCode method tests")
-    class SendVerificationCodeTests {
-        @Test
-        @DisplayName("should return true when phone number exists and SMS sent successfully")
-        void sendVerificationCode_ValidPhone_Success_ReturnsTrue() {
-            // Given
-            String validPhone = "13800138000";
-            when(authService.sendVerificationCode(validPhone)).thenReturn(true);
+    @Test
+    void login_InvalidWxCode_ReturnsNull() {
+        // Given
+        String wxCode = "invalid_wx_code";
+        JSONObject mockResponse = new JSONObject();
+        mockResponse.put("errcode", 40029);
+        mockResponse.put("errmsg", "invalid code");
 
-            // When
-            boolean result = authService.sendVerificationCode(validPhone);
+        when(restTemplate.getForObject(anyString(), any())).thenReturn(mockResponse.toJSONString());
 
-            // Then
-            assertTrue(result);
-            verify(authService).sendVerificationCode(validPhone);
-        }
+        // When
+        UserVO result = authService.login(wxCode);
 
-        @Test
-        @DisplayName("should return false when phone number doesn't exist")
-        void sendVerificationCode_PhoneNotExists_ReturnsFalse() {
-            // Given
-            String invalidPhone = "13800138001";
-            when(authService.sendVerificationCode(invalidPhone)).thenReturn(false);
+        // Then
+        assertNull(result);
 
-            // When
-            boolean result = authService.sendVerificationCode(invalidPhone);
+        // Verify
+        verify(restTemplate).getForObject(anyString(), any());
+        verify(userRepository, never()).findByWxid(anyString());
+    }
 
-            // Then
-            assertFalse(result);
-            verify(authService).sendVerificationCode(invalidPhone);
-        }
+    @Test
+    void login_NewUser_ReturnsNull() {
+        // Given
+        String wxCode = "valid_wx_code";
+        String openid = "new_user_openid";
 
-        @Test
-        @DisplayName("should handle empty phone number")
-        void sendVerificationCode_EmptyPhone_ReturnsFalse() {
-            // Given
-            String emptyPhone = "";
-            when(authService.sendVerificationCode(emptyPhone)).thenReturn(false);
+        JSONObject mockResponse = new JSONObject();
+        mockResponse.put("openid", openid);
+        mockResponse.put("session_key", "test_session_key");
 
-            // When
-            boolean result = authService.sendVerificationCode(emptyPhone);
+        when(restTemplate.getForObject(anyString(), any())).thenReturn(mockResponse.toJSONString());
+        when(userRepository.findByWxid(openid)).thenReturn(null);
 
-            // Then
-            assertFalse(result);
-            verify(authService).sendVerificationCode(emptyPhone);
-        }
+        // When
+        UserVO result = authService.login(wxCode);
 
-        @Test
-        @DisplayName("should handle null phone number")
-        void sendVerificationCode_NullPhone_ReturnsFalse() {
-            // Given
-            when(authService.sendVerificationCode(null)).thenReturn(false);
+        // Then
+        assertNull(result);
 
-            // When
-            boolean result = authService.sendVerificationCode(null);
+        // Verify
+        verify(restTemplate).getForObject(anyString(), any());
+        verify(userRepository).findByWxid(openid);
+    }
 
-            // Then
-            assertFalse(result);
-            verify(authService).sendVerificationCode(null);
-        }
+    @Test
+    void verifyVerificationCode_ValidCode_ReturnsTrue() {
+        // Given
+        VerificationCodeRequest request = new VerificationCodeRequest();
+        request.setPhone("13800138000");
+        request.setVerificationCode("123456");
+        request.setWxCode("valid_wx_code");
 
-        @Test
-        @DisplayName("should handle invalid phone number format")
-        void sendVerificationCode_InvalidPhoneFormat_ReturnsFalse() {
-            // Given
-            String invalidPhone = "12345";
-            when(authService.sendVerificationCode(invalidPhone)).thenReturn(false);
+        when(smsService.verifyCode(anyString(), anyString())).thenReturn(true);
 
-            // When
-            boolean result = authService.sendVerificationCode(invalidPhone);
+        // When
+        boolean result = authService.verifyVerificationCode(request);
 
-            // Then
-            assertFalse(result);
-            verify(authService).sendVerificationCode(invalidPhone);
-        }
+        // Then
+        assertTrue(result);
+
+        // Verify
+        verify(smsService).verifyCode(request.getPhone(), request.getVerificationCode());
+    }
+
+    @Test
+    void verifyVerificationCode_InvalidCode_ReturnsFalse() {
+        // Given
+        VerificationCodeRequest request = new VerificationCodeRequest();
+        request.setPhone("13800138000");
+        request.setVerificationCode("wrong_code");
+        request.setWxCode("valid_wx_code");
+
+        when(smsService.verifyCode(anyString(), anyString())).thenReturn(false);
+
+        // When
+        boolean result = authService.verifyVerificationCode(request);
+
+        // Then
+        assertFalse(result);
+
+        // Verify
+        verify(smsService).verifyCode(request.getPhone(), request.getVerificationCode());
+    }
+
+    @Test
+    void sendVerificationCode_ValidPhone_ReturnsTrue() {
+        // Given
+        String phoneNumber = "13800138000";
+        when(smsService.sendVerificationCode(phoneNumber)).thenReturn(true);
+
+        // When
+        boolean result = authService.sendVerificationCode(phoneNumber);
+
+        // Then
+        assertTrue(result);
+
+        // Verify
+        verify(smsService).sendVerificationCode(phoneNumber);
+    }
+
+    @Test
+    void sendVerificationCode_InvalidPhone_ReturnsFalse() {
+        // Given
+        String phoneNumber = "invalid_phone";
+        when(smsService.sendVerificationCode(phoneNumber)).thenReturn(false);
+
+        // When
+        boolean result = authService.sendVerificationCode(phoneNumber);
+
+        // Then
+        assertFalse(result);
+
+        // Verify
+        verify(smsService).sendVerificationCode(phoneNumber);
     }
 } 

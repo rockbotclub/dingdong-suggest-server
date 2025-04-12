@@ -1,5 +1,6 @@
 package cc.rockbot.dds.service.impl;
 
+import cc.rockbot.dds.dto.UserVO;
 import cc.rockbot.dds.dto.VerificationCodeRequest;
 import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import cc.rockbot.dds.util.JwtTokenUtil;
 
 @Service
 @Slf4j
@@ -37,11 +39,13 @@ public class AuthServiceImpl implements AuthService {
     private static final String WX_CODE2SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code";
 
     @Override
-    public UserDO login(String wxCode) {
+    public UserVO login(String wxCode) {
         if (wxCode == null || wxCode.isEmpty()) {
             log.warn("微信登录失败：wxCode为空");
             return null;
         }
+
+        UserVO userVO = new UserVO();
 
         try {
             // 调用微信接口获取openid
@@ -76,7 +80,9 @@ public class AuthServiceImpl implements AuthService {
             }
 
             log.info("用户登录成功，openid: {}", openid);
-            return user;
+            userVO.setUser(user);
+            userVO.setToken(JwtTokenUtil.generateToken(user.getId()));
+            return userVO;
         } catch (Exception e) {
             log.error("微信登录异常", e);
             return null;

@@ -37,14 +37,60 @@ Authorization: Bearer your-token-here
 }
 ```
 
-#### 2. 刷新Token
+#### 2. 发送验证码
+- **URL**: `/auth/send-verification-code`
+- **Method**: `POST`
+- **Request Body**:
+```json
+{
+    "phone": "string" // 手机号码
+}
+```
+- **Response**:
+```json
+{
+    "success": true,
+    "message": "string"
+}
+```
+
+#### 3. 验证验证码
+- **URL**: `/auth/verify-code`
+- **Method**: `POST`
+- **Request Body**:
+```json
+{
+    "phone": "string", // 手机号码
+    "verificationCode": "string", // 验证码
+    "wxCode": "string" // 微信登录code
+}
+```
+- **Response**:
+```json
+{
+    "success": true,
+    "message": "string",
+    "token": "string", // 验证成功时返回token
+    "user": {
+        "id": "long",
+        "wxid": "string",
+        "userName": "string",
+        "userOrg": "string",
+        "userPhone": "string",
+        "status": "integer",
+        "orgId": "string"
+    }
+}
+```
+
+#### 4. 刷新Token
 - **URL**: `/auth/refresh-token`
 - **Method**: `POST`
 - **Headers**:
   - `Authorization: Bearer your-token`
 - **Response**: `string` (new token)
 
-#### 3. 更新用户信息
+#### 5. 更新用户信息
 - **URL**: `/auth/update-user-info`
 - **Method**: `POST`
 - **Headers**:
