@@ -25,17 +25,28 @@ Authorization: Bearer your-token-here
 }
 ```
 - **Response**:
+  - **Success (200 OK)**:
 ```json
 {
-    "token": "string",
-    "wxid": "string",
-    "userName": "string",
-    "userOrg": "string",
-    "userPhone": "string",
-    "status": 0,
-    "orgId": "string"
+    "user": {
+        "id": "long",
+        "wxid": "string",
+        "userName": "string",
+        "userOrg": "string",
+        "userPhone": "string",
+        "status": "integer",
+        "orgId": "string",
+        "gmtCreate": "string",
+        "gmtModified": "string"
+    },
+    "token": "string"
 }
 ```
+  - **Error Responses**:
+    - `400 Bad Request`: 微信登录code不能为空
+    - `400 Bad Request`: 微信登录失败 (invalid code)
+    - `404 Not Found`: 未找到openid
+    - `400 Bad Request`: 新用户需要先注册
 
 #### 2. 发送验证码
 - **URL**: `/auth/send-verification-code`
@@ -47,182 +58,110 @@ Authorization: Bearer your-token-here
 }
 ```
 - **Response**:
-```json
-{
-    "success": true,
-    "message": "string"
-}
-```
+  - **Success (200 OK)**: 空响应
+  - **Error Responses**:
+    - `400 Bad Request`: 手机号不能为空
+    - `404 Not Found`: 用户不存在，请联系管理员后台添加
+    - `500 Internal Server Error`: 发送验证码失败
 
-#### 3. 验证验证码
-- **URL**: `/auth/verify-code`
+#### 3. 注册/验证手机号
+- **URL**: `/auth/register`
 - **Method**: `POST`
 - **Request Body**:
 ```json
 {
-    "phone": "string", // 手机号码
+    "phone": "string",      // 手机号码
     "verificationCode": "string", // 验证码
-    "wxCode": "string" // 微信登录code
+    "wxCode": "string"      // 微信登录code
 }
 ```
 - **Response**:
-```json
-{
-    "success": true,
-    "message": "string",
-    "token": "string", // 验证成功时返回token
-    "user": {
-        "id": "long",
-        "wxid": "string",
-        "userName": "string",
-        "userOrg": "string",
-        "userPhone": "string",
-        "status": "integer",
-        "orgId": "string"
-    }
-}
-```
-
-#### 4. 刷新Token
-- **URL**: `/auth/refresh-token`
-- **Method**: `POST`
-- **Headers**:
-  - `Authorization: Bearer your-token`
-- **Response**: `string` (new token)
-
-#### 5. 更新用户信息
-- **URL**: `/auth/update-user-info`
-- **Method**: `POST`
-- **Headers**:
-  - `Authorization: Bearer your-token`
-- **Request Body**:
-```json
-{
-    "userName": "string",
-    "userOrg": "string",
-    "userPhone": "string",
-    "orgId": "string"
-}
-```
-- **Response**:
-```json
-{
-    "token": "string",
-    "wxid": "string",
-    "userName": "string",
-    "userOrg": "string",
-    "userPhone": "string",
-    "status": 0,
-    "orgId": "string"
-}
-```
-
-### Suggestions
-
-#### 1. 创建建议
-- **URL**: `/v1/suggestions`
-- **Method**: `POST`
-- **Headers**:
-  - `Authorization: Bearer your-token`
-- **Request Body**: `SuggestionRequest`
-- **Response**: `SuggestionResponse`
-
-#### 2. 获取建议详情
-- **URL**: `/v1/suggestions/{id}`
-- **Method**: `GET`
-- **Headers**:
-  - `Authorization: Bearer your-token`
-- **Response**: `SuggestionResponse`
-
-#### 3. 更新建议
-- **URL**: `/v1/suggestions/{id}`
-- **Method**: `PUT`
-- **Headers**:
-  - `Authorization: Bearer your-token`
-- **Request Body**: `SuggestionRequest`
-- **Response**: `void`
-
-#### 4. 删除建议
-- **URL**: `/v1/suggestions/{id}`
-- **Method**: `DELETE`
-- **Headers**:
-  - `Authorization: Bearer your-token`
-- **Response**: `void`
-
-#### 5. 获取所有建议
-- **URL**: `/v1/suggestions`
-- **Method**: `GET`
-- **Headers**:
-  - `Authorization: Bearer your-token`
-- **Response**: `List<SuggestionResponse>`
-
-### Organizations
-
-#### 1. 创建组织
-- **URL**: `/organizations`
-- **Method**: `POST`
-- **Request Body**: `OrganizationDO`
-- **Response**: `OrganizationDO`
-
-#### 2. 获取组织详情
-- **URL**: `/organizations/{id}`
-- **Method**: `GET`
-- **Response**: `OrganizationDO`
-
-#### 3. 获取所有组织
-- **URL**: `/organizations`
-- **Method**: `GET`
-- **Response**: `List<OrganizationDO>`
-
-#### 4. 更新组织
-- **URL**: `/organizations/{id}`
-- **Method**: `PUT`
-- **Request Body**: `OrganizationDO`
-- **Response**: `OrganizationDO`
-
-#### 5. 删除组织
-- **URL**: `/organizations/{id}`
-- **Method**: `DELETE`
-- **Response**: `void`
+  - **Success (200 OK)**: 空响应
+  - **Error Responses**:
+    - `400 Bad Request`: 手机号、验证码和微信code不能为空
+    - `400 Bad Request`: 验证码错误
+    - `400 Bad Request`: 微信登录失败
+    - `404 Not Found`: 未找到openid
+    - `400 Bad Request`: 用户已存在
+    - `500 Internal Server Error`: 用户注册异常
 
 ### Users
 
 #### 1. 创建用户
 - **URL**: `/users`
 - **Method**: `POST`
-- **Request Body**: `UserDO`
-- **Response**: `UserDO`
+- **Request Body**:
+```json
+{
+    "wxid": "string",
+    "userName": "string",
+    "userOrg": "string",
+    "userPhone": "string",
+    "status": "integer",
+    "orgId": "string"
+}
+```
+- **Response**: 200 OK with created user object
 
-#### 2. 获取用户详情
+#### 2. 获取用户信息
 - **URL**: `/users/{id}`
 - **Method**: `GET`
-- **Response**: `UserDO`
+- **Response**: 200 OK with user object or 404 Not Found
 
-#### 3. 根据微信ID获取用户
+#### 3. 通过微信ID获取用户
 - **URL**: `/users/wxid/{userWxid}`
 - **Method**: `GET`
-- **Response**: `UserDO`
+- **Response**: 200 OK with user object or 404 Not Found
 
 #### 4. 获取组织下的所有用户
 - **URL**: `/users/org/{orgId}`
 - **Method**: `GET`
-- **Response**: `List<UserDO>`
+- **Response**: 200 OK with list of users
 
 #### 5. 获取所有用户
 - **URL**: `/users`
 - **Method**: `GET`
-- **Response**: `List<UserDO>`
+- **Response**: 200 OK with list of users
 
-#### 6. 更新用户
+#### 6. 更新用户信息
 - **URL**: `/users/{id}`
 - **Method**: `PUT`
-- **Request Body**: `UserDO`
-- **Response**: `UserDO`
+- **Request Body**: User object with updated fields
+- **Response**: 200 OK with updated user object
 
 #### 7. 删除用户
 - **URL**: `/users/{id}`
 - **Method**: `DELETE`
-- **Response**: `void`
+- **Response**: 200 OK
+
+### Organizations
+
+#### 1. 创建组织
+- **URL**: `/organizations`
+- **Method**: `POST`
+- **Request Body**: Organization object
+- **Response**: 200 OK with created organization object
+
+#### 2. 获取组织信息
+- **URL**: `/organizations/{id}`
+- **Method**: `GET`
+- **Response**: 200 OK with organization object or 404 Not Found
+
+#### 3. 通过组织ID获取组织
+- **URL**: `/organizations/orgid/{orgId}`
+- **Method**: `GET`
+- **Response**: 200 OK with organization object or 404 Not Found
+
+#### 4. 获取所有组织
+- **URL**: `/organizations`
+- **Method**: `GET`
+- **Response**: 200 OK with list of organizations
+
+#### 5. 更新组织信息
+- **URL**: `/organizations/{id}`
+- **Method**: `PUT`
+- **Request Body**: Organization object with updated fields
+- **Response**: 200 OK with updated organization object
 
 ## Data Models
 

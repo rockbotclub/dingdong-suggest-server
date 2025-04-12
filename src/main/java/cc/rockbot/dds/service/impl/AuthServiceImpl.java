@@ -14,9 +14,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import cc.rockbot.dds.dto.UserVO;
+import cc.rockbot.dds.exception.BusinessException;
+import cc.rockbot.dds.exception.ErrorCode;
+import cc.rockbot.dds.util.JwtTokenUtil;
 
 import javax.annotation.Resource;
-import cc.rockbot.dds.util.JwtTokenUtil;
 
 @Service
 @Slf4j
@@ -42,8 +44,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserVO login(String wxCode) {
         if (wxCode == null || wxCode.isEmpty()) {
-            log.warn("微信登录失败：wxCode为空");
-            return null;
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "微信登录code不能为空");
         }
 
         UserVO userVO = new UserVO();
@@ -62,53 +63,104 @@ public class AuthServiceImpl implements AuthService {
 
             // 检查微信接口返回的错误
             if (jsonObject.containsKey("errcode") && jsonObject.getIntValue("errcode") != 0) {
-                String errorMsg = "微信登录失败：" + jsonObject.getString("errmsg");
-                log.error(errorMsg);
-                return null;
+                String errorMsg = jsonObject.getString("errmsg");
+                throw new BusinessException(ErrorCode.WX_LOGIN_FAILED, errorMsg);
             }
 
             String openid = jsonObject.getString("openid");
             if (openid == null || openid.isEmpty()) {
-                log.error("微信登录失败：未获取到openid");
-                return null;
+                throw new BusinessException(ErrorCode.WX_OPENID_NOT_FOUND);
             }
-            
+            log.info("成功获取openid: {}", openid);
+
             // 查询数据库中是否存在该用户
             UserDO user = userRepository.findByWxid(openid);
             if (user == null) {
                 log.info("新用户登录，openid: {}", openid);
-                return null;
+                throw new BusinessException(ErrorCode.NEW_USER_NEED_REGISTER);
             }
 
             log.info("用户登录成功，openid: {}", openid);
             userVO.setUser(user);
             userVO.setToken(JwtTokenUtil.generateToken(user.getId()));
             return userVO;
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("微信登录异常", e);
-            return null;
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "微信登录异常", e);
         }
     }
 
     @Override
     public boolean register(UserRegisterRequest request) {
-        if (request == null || request.getPhone() == null || request.getVerificationCode() == null) {
-            return false;
+        if (request == null || request.getPhone() == null || request.getPhone().isEmpty() 
+                || request.getVerificationCode() == null || request.getVerificationCode().isEmpty()
+                || request.getWxCode() == null || request.getWxCode().isEmpty()) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号、验证码和微信code不能为空");
         }
         
-        return smsService.verifyCode(request.getPhone(), request.getVerificationCode());
+        if (!smsService.verifyCode(request.getPhone(), request.getVerificationCode())) {
+            throw new BusinessException(ErrorCode.VERIFICATION_CODE_ERROR);
+        }
+
+        try {
+            // 调用微信接口获取openid
+            String url = WX_CODE2SESSION_URL
+                    .replace("{appid}", appid)
+                    .replace("{secret}", secret)
+                    .replace("{code}", request.getWxCode());
+
+            String wxResponse = restTemplate.getForObject(url, String.class);
+            JSONObject jsonObject = JSON.parseObject(wxResponse);
+
+            // 检查微信接口返回的错误
+            if (jsonObject.containsKey("errcode") && jsonObject.getIntValue("errcode") != 0) {
+                String errorMsg = jsonObject.getString("errmsg");
+                throw new BusinessException(ErrorCode.WX_LOGIN_FAILED, errorMsg);
+            }
+
+            String openid = jsonObject.getString("openid");
+            if (openid == null || openid.isEmpty()) {
+                throw new BusinessException(ErrorCode.WX_OPENID_NOT_FOUND);
+            }
+
+            // 检查用户是否已存在
+            UserDO existingUser = userRepository.findByWxid(openid);
+            if (existingUser != null) {
+                throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
+            }
+
+            // 创建新用户
+            UserDO newUser = new UserDO();
+            newUser.setWxid(openid);
+            newUser.setUserPhone(request.getPhone());
+            userRepository.save(newUser);
+            
+            return true;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("用户注册异常", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户注册异常", e);
+        }
     }
 
     @Override
     public boolean sendVerificationCode(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
-            return false;
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号不能为空");
         }
+        
         UserDO user = userRepository.findByUserPhone(phoneNumber);
         if (user == null) {
-            throw new RuntimeException("用户不存在，请联系管理员后台添加");
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在，请联系管理员后台添加");
         }
 
-        return smsService.sendVerificationCode(phoneNumber);
+        if (!smsService.sendVerificationCode(phoneNumber)) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送验证码失败");
+        }
+        
+        return true;
     }
 } 
