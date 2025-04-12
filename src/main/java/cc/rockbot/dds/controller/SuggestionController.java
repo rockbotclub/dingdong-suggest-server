@@ -5,9 +5,6 @@ import cc.rockbot.dds.dto.SuggestionResponse;
 import cc.rockbot.dds.service.SuggestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,90 +17,40 @@ public class SuggestionController {
     private final SuggestionService suggestionService;
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<SuggestionResponse> createSuggestion(
-            @RequestBody SuggestionRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        request.setUserWxid(userDetails.getUsername());
+    public ResponseEntity<SuggestionResponse> createSuggestion(@RequestBody SuggestionRequest request) {
         return ResponseEntity.ok(suggestionService.createSuggestion(request));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<SuggestionResponse> getSuggestion(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        SuggestionResponse response = suggestionService.getSuggestionById(id);
-        // 检查是否是建议的创建者或管理员
-        if (!response.getUserWxid().equals(userDetails.getUsername()) && 
-            !userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new RuntimeException("Unauthorized access");
-        }
-        return ResponseEntity.ok(response);
+    public ResponseEntity<SuggestionResponse> getSuggestion(@PathVariable Long id) {
+        return ResponseEntity.ok(suggestionService.getSuggestionById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> updateSuggestion(
-            @PathVariable Long id,
-            @RequestBody SuggestionRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        SuggestionResponse existing = suggestionService.getSuggestionById(id);
-        // 检查是否是建议的创建者或管理员
-        if (!existing.getUserWxid().equals(userDetails.getUsername()) && 
-            !userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new RuntimeException("Unauthorized access");
-        }
+    public ResponseEntity<Void> updateSuggestion(@PathVariable Long id, @RequestBody SuggestionRequest request) {
         suggestionService.updateSuggestion(id, request);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> deleteSuggestion(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        SuggestionResponse existing = suggestionService.getSuggestionById(id);
-        // 检查是否是建议的创建者或管理员
-        if (!existing.getUserWxid().equals(userDetails.getUsername()) && 
-            !userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new RuntimeException("Unauthorized access");
-        }
+    public ResponseEntity<Void> deleteSuggestion(@PathVariable Long id) {
         suggestionService.deleteSuggestion(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<SuggestionResponse>> getAllSuggestions(
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<SuggestionResponse>> getAllSuggestions() {
         return ResponseEntity.ok(suggestionService.getAllSuggestions());
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> updateStatus(
-            @PathVariable Long id,
-            @RequestParam String status,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Void> updateStatus(@PathVariable Long id, @RequestParam String status) {
         suggestionService.updateSuggestionStatus(id, status);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/withdraw")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> withdrawSuggestion(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        SuggestionResponse existing = suggestionService.getSuggestionById(id);
-        // 检查是否是建议的创建者
-        if (!existing.getUserWxid().equals(userDetails.getUsername())) {
-            throw new RuntimeException("Only the creator can withdraw the suggestion");
-        }
-        // 检查建议状态是否为已提交
-        if (existing.getStatus() != 0) {
-            throw new RuntimeException("Only submitted suggestions can be withdrawn");
-        }
+    public ResponseEntity<Void> withdrawSuggestion(@PathVariable Long id) {
         suggestionService.updateSuggestionStatus(id, "WITHDRAWN");
         return ResponseEntity.ok().build();
     }
