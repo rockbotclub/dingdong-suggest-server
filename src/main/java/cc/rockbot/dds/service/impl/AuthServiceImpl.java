@@ -4,43 +4,57 @@ import cc.rockbot.dds.dto.AuthRequest;
 import cc.rockbot.dds.dto.AuthResponse;
 import cc.rockbot.dds.dto.VerificationCodeRequest;
 import cc.rockbot.dds.service.AuthService;
+import cc.rockbot.dds.service.SmsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
+import cc.rockbot.dds.config.WxConfig;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.web.client.RestTemplate;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     @Resource
     private UserRepository userRepository;
 
+    @Resource
+    private WxConfig wxConfig;
+
+    @Resource
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private SmsService smsService;
+
+    private static final String WX_CODE2SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code";
+
     @Override
-    public AuthResponse login(AuthRequest request) {
-        AuthResponse response = new AuthResponse();
-        // 查询数据库中是否存在该用户
-        UserDO user = userRepository.findByWxid(request.getCode());
-        if (user == null) {
-            response.setSuccess(true);
-            response.setMessage("用户不存在");
-            return response;
+    public UserDO login(String wxCode) {
+        // TODO: 实现微信登录逻辑
+        return null;
+    }
+
+    @Override
+    public boolean verifyVerificationCode(VerificationCodeRequest request) {
+        if (request == null || request.getPhone() == null || request.getVerificationCode() == null) {
+            return false;
         }
-        response.setSuccess(true);
-        response.setData(convertToUserInfo(user));
-        return response;
+        
+        return smsService.verifyCode(request.getPhone(), request.getVerificationCode());
     }
 
     @Override
-    public void sendVerificationCode(VerificationCodeRequest request) {
-        // TODO: Implement SMS verification code sending logic
-    }
-
-    private AuthResponse.UserInfo convertToUserInfo(UserDO user) {
-        AuthResponse.UserInfo userInfo = new AuthResponse.UserInfo();
-        userInfo.setNickName(user.getUserName());
-        userInfo.setAvatarUrl("https://example.com/avatar.jpg");
-        userInfo.setOrganizationId(user.getOrgId());
-        userInfo.setOrganizationName(user.getUserOrg());
-        return userInfo;
+    public boolean sendVerificationCode(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return false;
+        }
+        
+        return smsService.sendVerificationCode(phoneNumber);
     }
 } 

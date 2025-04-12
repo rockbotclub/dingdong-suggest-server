@@ -1,18 +1,17 @@
 package cc.rockbot.dds.dto;
 
 import lombok.Data;
+import cc.rockbot.dds.model.UserDO;
 
 @Data
 public class AuthResponse {
     private boolean success;
     private String message;
-    private UserInfo data;
+    private UserDO data;
 
-    @Data
-    public static class UserInfo {
-        private String nickName;
-        private String avatarUrl;
-        private String organizationId;
-        private String organizationName;
+    public AuthResponse(boolean success, String message, UserDO data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
     }
-} 
+}   
