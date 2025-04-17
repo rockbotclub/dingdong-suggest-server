@@ -19,6 +19,7 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
+                // Allow CORS for API endpoints
                 registry.addMapping("/api/**")
                     .allowedOrigins(
                         "http://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
@@ -29,6 +30,20 @@ public class WebConfig {
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
                     .allowCredentials(true)
+                    .maxAge(3600);
+
+                // Allow CORS for Swagger UI
+                registry.addMapping("/swagger-ui/**")
+                    .allowedOrigins("*")
+                    .allowedMethods("GET", "OPTIONS")
+                    .allowedHeaders("*")
+                    .maxAge(3600);
+
+                // Allow CORS for API docs
+                registry.addMapping("/v3/api-docs/**")
+                    .allowedOrigins("*")
+                    .allowedMethods("GET", "OPTIONS")
+                    .allowedHeaders("*")
                     .maxAge(3600);
             }
         };
