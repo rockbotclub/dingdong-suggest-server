@@ -1,5 +1,6 @@
 package cc.rockbot.dds.service;
 
+import cc.rockbot.dds.BaseTest;
 import cc.rockbot.dds.dto.UserRegisterRequest;
 import cc.rockbot.dds.dto.UserVO;
 import cc.rockbot.dds.exception.BusinessException;
@@ -9,17 +10,14 @@ import cc.rockbot.dds.repository.UserRepository;
 import cc.rockbot.dds.service.impl.AuthServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 @Sql({"/test_data.sql"})
 @Transactional
-class AuthServiceIntegrationTest {
+class AuthServiceIntegrationTest extends BaseTest {
 
     @Autowired
     private AuthService authService;
