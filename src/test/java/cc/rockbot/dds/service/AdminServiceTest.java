@@ -1,5 +1,6 @@
 package cc.rockbot.dds.service;
 
+import cc.rockbot.dds.exception.BusinessException;
 import cc.rockbot.dds.model.AdminDO;
 import cc.rockbot.dds.repository.AdminRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -174,7 +175,7 @@ class AdminServiceTest {
      */
     @Test
     void createAdmin_WhenAdminIsNull_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.createAdmin(null));
+        assertThrows(BusinessException.class, () -> adminService.createAdmin(null));
         verify(adminRepository, never()).save(any(AdminDO.class));
     }
 
@@ -186,10 +187,9 @@ class AdminServiceTest {
     void createAdmin_WithInvalidData_ShouldThrowException() {
         AdminDO invalidAdmin = new AdminDO();
         invalidAdmin.setAdminWxid(""); // 空微信ID
-        when(adminRepository.save(any(AdminDO.class))).thenThrow(new IllegalArgumentException());
 
-        assertThrows(IllegalArgumentException.class, () -> adminService.createAdmin(invalidAdmin));
-        verify(adminRepository).save(invalidAdmin);
+        assertThrows(BusinessException.class, () -> adminService.createAdmin(invalidAdmin));
+        verify(adminRepository, never()).save(any(AdminDO.class));
     }
 
     /**
@@ -213,7 +213,7 @@ class AdminServiceTest {
      */
     @Test
     void getAdminById_WhenIdIsNull_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.getAdminById(null));
+        assertThrows(BusinessException.class, () -> adminService.getAdminById(null));
         verify(adminRepository, never()).findById(anyLong());
     }
 
@@ -223,7 +223,7 @@ class AdminServiceTest {
      */
     @Test
     void getAdminByWxid_WhenWxidIsEmpty_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.getAdminByWxid(""));
+        assertThrows(BusinessException.class, () -> adminService.getAdminByWxid(""));
         verify(adminRepository, never()).findByAdminWxid(anyString());
     }
 
@@ -233,7 +233,7 @@ class AdminServiceTest {
      */
     @Test
     void getAdminByWxid_WhenWxidIsNull_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.getAdminByWxid(null));
+        assertThrows(BusinessException.class, () -> adminService.getAdminByWxid(null));
         verify(adminRepository, never()).findByAdminWxid(anyString());
     }
 
@@ -243,7 +243,7 @@ class AdminServiceTest {
      */
     @Test
     void updateAdmin_WhenAdminIsNull_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.updateAdmin(null));
+        assertThrows(BusinessException.class, () -> adminService.updateAdmin(null));
         verify(adminRepository, never()).save(any(AdminDO.class));
     }
 
@@ -253,10 +253,8 @@ class AdminServiceTest {
      */
     @Test
     void updateAdmin_WhenIdIsNull_ShouldThrowException() {
-        AdminDO admin = new AdminDO();
-        admin.setId(null);
-
-        assertThrows(IllegalArgumentException.class, () -> adminService.updateAdmin(admin));
+        AdminDO adminWithoutId = new AdminDO();
+        assertThrows(BusinessException.class, () -> adminService.updateAdmin(adminWithoutId));
         verify(adminRepository, never()).save(any(AdminDO.class));
     }
 
@@ -266,7 +264,7 @@ class AdminServiceTest {
      */
     @Test
     void deleteAdmin_WhenIdIsNull_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.deleteAdmin(null));
+        assertThrows(BusinessException.class, () -> adminService.deleteAdmin(null));
         verify(adminRepository, never()).deleteById(anyLong());
     }
 
@@ -276,7 +274,7 @@ class AdminServiceTest {
      */
     @Test
     void existsByWxid_WhenWxidIsEmpty_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.existsByWxid(""));
+        assertThrows(BusinessException.class, () -> adminService.existsByWxid(""));
         verify(adminRepository, never()).existsByAdminWxid(anyString());
     }
 
@@ -286,7 +284,7 @@ class AdminServiceTest {
      */
     @Test
     void existsByWxid_WhenWxidIsNull_ShouldThrowException() {
-        assertThrows(IllegalArgumentException.class, () -> adminService.existsByWxid(null));
+        assertThrows(BusinessException.class, () -> adminService.existsByWxid(null));
         verify(adminRepository, never()).existsByAdminWxid(anyString());
     }
 } 

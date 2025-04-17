@@ -8,8 +8,9 @@ public enum ErrorCode {
     SUCCESS(0, "成功"),
     SYSTEM_ERROR(10000, "系统错误"),
     PARAM_ERROR(10001, "参数错误"),
-    UNAUTHORIZED(10002, "未授权"),
-    FORBIDDEN(10003, "禁止访问"),
+    NOT_FOUND(10002, "资源不存在"),
+    UNAUTHORIZED(10003, "未授权"),
+    FORBIDDEN(10004, "禁止访问"),
     
     // 认证相关错误码 (20000-20999)
     WX_LOGIN_FAILED(20000, "微信登录失败"),
@@ -30,7 +31,11 @@ public enum ErrorCode {
     
     // 建议相关错误码 (23000-23999)
     SUGGESTION_NOT_FOUND(23000, "建议不存在"),
-    SUGGESTION_STATUS_INVALID(23001, "建议状态无效");
+    SUGGESTION_STATUS_INVALID(23001, "建议状态无效"),
+
+    // 管理员相关错误码 (24000-24999)
+    ADMIN_NOT_FOUND(24000, "管理员不存在"),
+    ADMIN_ALREADY_EXISTS(24001, "管理员已存在");
 
     private final int code;
     private final String message;

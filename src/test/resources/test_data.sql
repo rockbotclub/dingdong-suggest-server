@@ -2,10 +2,10 @@
 DELETE FROM suggestions;
 DELETE FROM users;
 DELETE FROM admins;
-DELETE FROM orgnizations;
+DELETE FROM organizations;
 
 -- Test data for organizations
-INSERT INTO orgnizations (id, gmt_create, gmt_modified, org_name, address) VALUES
+INSERT INTO organizations (id, gmt_create, gmt_modified, org_name, address) VALUES
 ('org-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '测试组织1', '北京市海淀区'),
 ('org-002', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '测试组织2', '上海市浦东新区');
 
