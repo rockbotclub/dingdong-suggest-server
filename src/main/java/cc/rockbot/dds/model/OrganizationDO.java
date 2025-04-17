@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "orgnizations")
+@Table(name = "organizations")
 public class OrganizationDO {
     @Id
     @NotBlank(message = "Organization ID cannot be empty")

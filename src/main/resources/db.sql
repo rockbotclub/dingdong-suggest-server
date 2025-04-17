@@ -12,7 +12,7 @@ CREATE TABLE `admins` (
   KEY `idx_org_id` (`org_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员信息表';
 
-CREATE TABLE `orgnizations` (
+CREATE TABLE `organizations` (
   `id` varchar(255) NOT NULL DEFAULT '' COMMENT '组织UUID',
   `gmt_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `gmt_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',

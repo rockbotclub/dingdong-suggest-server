@@ -1,5 +1,5 @@
 -- Test data for organizations
-INSERT INTO `orgnizations` (`id`, `org_name`, `address`) VALUES
+INSERT INTO `organizations` (`id`, `org_name`, `address`) VALUES
 ('org-001', '阿里巴巴集团', '浙江省杭州市西湖区文三路969号'),
 ('org-002', '腾讯科技', '广东省深圳市南山区科技园'),
 ('org-003', '百度在线', '北京市海淀区上地十街10号'),
