@@ -20,10 +20,15 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-//                    .allowedOrigins("http://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com", "https://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com","http://localhost")
-                    .allowedOrigins("*")
+                    .allowedOrigins(
+                        "http://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
+                        "https://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
+                        "http://localhost:8080",
+                        "http://localhost:3000"
+                    )
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
+                    .allowCredentials(true)
                     .maxAge(3600);
             }
         };
