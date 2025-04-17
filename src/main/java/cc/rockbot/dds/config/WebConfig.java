@@ -23,8 +23,8 @@ public class WebConfig {
                     .allowedOrigins(
                         "http://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
                         "https://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
-                        "http://localhost:8080",
-                        "http://localhost:3000"
+                        "http://localhost",
+                        "https://localhost"
                     )
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
