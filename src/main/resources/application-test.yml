@@ -1,0 +1,81 @@
+server:
+  port: 80
+
+spring:
+  config:
+    import: optional:file:${user.dir}/.env
+  datasource:
+    url: jdbc:mysql://${MYSQL_ADDRESS}/dingdong_suggest?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        naming:
+  application:
+    name: dds
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    timeout: 10000
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+
+logging:
+  level:
+    root: INFO
+    cc.rockbot.dds: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 腾讯云对象存储配置
+tencent:
+  cos:
+    region: ${COS_REGION:ap-shanghai}
+    bucketName: ${COS_BUCKET:7072-prod-0g6uy8h065c32181-1352937363}
+    baseUrl: https://${COS_BUCKET:7072-prod-0g6uy8h065c32181-1352937363}.cos.${COS_REGION:ap-shanghai}.myqcloud.com
+
+mybatis:
+  mapper-locations: classpath*:mapper/*Mapper.xml
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: cc.rockbot.dds.controller
+
+# JWT配置
+jwt:
+  secret: your-secret-key-here-must-be-at-least-256-bits-long
+  expiration: 86400000 # 24小时
+
+# 微信小程序配置
+wx:
+  miniapp:
+    appid: ${WX_APPID}
+    secret: ${WX_SECRET} 
