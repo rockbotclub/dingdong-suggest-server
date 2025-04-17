@@ -66,12 +66,12 @@ public class AuthController {
         try {
             if (request == null || request.getPhone() == null || request.getPhone().isEmpty() 
                     || request.getVerificationCode() == null || request.getVerificationCode().isEmpty()
-                    || request.getWxCode() == null || request.getWxCode().isEmpty()) {
-                throw new BusinessException(ErrorCode.PARAM_ERROR, "请求参数不能为空");
+                    || request.getWxid() == null || request.getWxid().isEmpty()) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号、验证码和微信openid不能为空");
             }
             
-            authService.register(request);
-            return ResponseEntity.ok().build();
+            boolean result = authService.register(request);
+            return ResponseEntity.ok(result);
         } catch (BusinessException e) {
             log.warn("用户注册业务异常: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

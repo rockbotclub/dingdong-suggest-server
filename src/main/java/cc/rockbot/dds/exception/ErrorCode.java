@@ -22,7 +22,6 @@ public enum ErrorCode {
     USER_NOT_FOUND(20007, "用户不存在"),
     
     // 用户相关错误码 (21000-21999)
-    USER_ALREADY_EXISTS(21000, "用户已存在"),
     USER_STATUS_INVALID(21001, "用户状态无效"),
     
     // 组织相关错误码 (22000-22999)

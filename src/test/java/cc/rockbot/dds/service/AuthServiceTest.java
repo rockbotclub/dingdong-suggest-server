@@ -153,16 +153,10 @@ class AuthServiceTest {
         UserRegisterRequest request = new UserRegisterRequest();
         request.setPhone("13800138000");
         request.setVerificationCode("123456");
-        request.setWxCode("valid_wx_code");
+        request.setWxid("test_wxid");
 
-        String openid = "test_openid";
-        JSONObject mockResponse = new JSONObject();
-        mockResponse.put("openid", openid);
-        mockResponse.put("session_key", "test_session_key");
-
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(mockResponse.toJSONString());
         when(smsService.verifyCode(anyString(), anyString())).thenReturn(true);
-        when(userRepository.findByWxid(openid)).thenReturn(null);
+        when(userRepository.findByUserPhone(anyString())).thenReturn(new UserDO());
 
         // When
         boolean result = authService.register(request);
@@ -172,8 +166,7 @@ class AuthServiceTest {
 
         // Verify
         verify(smsService).verifyCode(request.getPhone(), request.getVerificationCode());
-        verify(restTemplate).getForObject(anyString(), any());
-        verify(userRepository).findByWxid(openid);
+        verify(userRepository).findByUserPhone(request.getPhone());
         verify(userRepository).save(any(UserDO.class));
     }
 
@@ -183,14 +176,8 @@ class AuthServiceTest {
         UserRegisterRequest request = new UserRegisterRequest();
         request.setPhone("13800138000");
         request.setVerificationCode("123456");
-        request.setWxCode("valid_wx_code");
+        request.setWxid("test_wxid");
 
-        String openid = "test_openid";
-        JSONObject mockResponse = new JSONObject();
-        mockResponse.put("openid", openid);
-        mockResponse.put("session_key", "test_session_key");
-
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(mockResponse.toJSONString());
         when(smsService.verifyCode(anyString(), anyString())).thenReturn(false);
 
         // When & Then
@@ -207,15 +194,14 @@ class AuthServiceTest {
         UserRegisterRequest request = new UserRegisterRequest();
         request.setPhone("");
         request.setVerificationCode("");
-        request.setWxCode("");
+        request.setWxid("");
 
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             authService.register(request);
         });
 
-        assertEquals(ErrorCode.PARAM_ERROR.getCode(), exception.getErrorCode().getCode());
-        assertEquals("手机号、验证码和微信code不能为空", exception.getDetailMessage());
+        assertEquals("手机号、验证码和微信openid不能为空", exception.getDetailMessage());
     }
 
     @Test
@@ -224,14 +210,8 @@ class AuthServiceTest {
         UserRegisterRequest request = new UserRegisterRequest();
         request.setPhone("13800138000");
         request.setVerificationCode("123456");
-        request.setWxCode("valid_wx_code");
+        request.setWxid("test_wxid");
 
-        String openid = "test_openid";
-        JSONObject mockResponse = new JSONObject();
-        mockResponse.put("openid", openid);
-        mockResponse.put("session_key", "test_session_key");
-
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(mockResponse.toJSONString());
         when(smsService.verifyCode(anyString(), anyString())).thenReturn(false);
 
         // When & Then

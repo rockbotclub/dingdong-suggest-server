@@ -13,6 +13,8 @@ public class UserRegisterRequest {
     @NotBlank(message = "验证码不能为空")
     private String verificationCode;
 
-    @NotBlank(message = "wxCode不能为空")
+    @NotBlank(message = "微信openid不能为空")
+    private String wxid;
+    
     private String wxCode;
 } 

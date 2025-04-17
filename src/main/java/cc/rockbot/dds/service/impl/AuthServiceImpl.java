@@ -1,6 +1,5 @@
 package cc.rockbot.dds.service.impl;
 
-import cc.rockbot.dds.dto.SendVerificationRequest;
 import cc.rockbot.dds.dto.UserRegisterRequest;
 import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
@@ -19,6 +18,7 @@ import cc.rockbot.dds.exception.ErrorCode;
 import cc.rockbot.dds.util.JwtTokenUtil;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 
 @Service
 @Slf4j
@@ -96,8 +96,8 @@ public class AuthServiceImpl implements AuthService {
     public boolean register(UserRegisterRequest request) {
         if (request == null || request.getPhone() == null || request.getPhone().isEmpty() 
                 || request.getVerificationCode() == null || request.getVerificationCode().isEmpty()
-                || request.getWxCode() == null || request.getWxCode().isEmpty()) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号、验证码和微信code不能为空");
+                || request.getWxid() == null || request.getWxid().isEmpty()) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号、验证码和微信openid不能为空");
         }
         
         if (!smsService.verifyCode(request.getPhone(), request.getVerificationCode())) {
@@ -105,37 +105,15 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-            // 调用微信接口获取openid
-            String url = WX_CODE2SESSION_URL
-                    .replace("{appid}", appid)
-                    .replace("{secret}", secret)
-                    .replace("{code}", request.getWxCode());
-
-            String wxResponse = restTemplate.getForObject(url, String.class);
-            JSONObject jsonObject = JSON.parseObject(wxResponse);
-
-            // 检查微信接口返回的错误
-            if (jsonObject.containsKey("errcode") && jsonObject.getIntValue("errcode") != 0) {
-                String errorMsg = jsonObject.getString("errmsg");
-                throw new BusinessException(ErrorCode.WX_LOGIN_FAILED, errorMsg);
-            }
-
-            String openid = jsonObject.getString("openid");
-            if (openid == null || openid.isEmpty()) {
-                throw new BusinessException(ErrorCode.WX_OPENID_NOT_FOUND);
-            }
-
             // 检查用户是否已存在
-            UserDO existingUser = userRepository.findByWxid(openid);
-            if (existingUser != null) {
-                throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
+            UserDO existingUser = userRepository.findByUserPhone(request.getPhone());
+            if (existingUser == null) {
+                throw new BusinessException(ErrorCode.USER_NOT_FOUND);
             }
 
-            // 创建新用户
-            UserDO newUser = new UserDO();
-            newUser.setWxid(openid);
-            newUser.setUserPhone(request.getPhone());
-            userRepository.save(newUser);
+            existingUser.setWxid(request.getWxid());
+            existingUser.setGmtModified(LocalDateTime.now());
+            userRepository.save(existingUser);
             
             return true;
         } catch (BusinessException e) {
