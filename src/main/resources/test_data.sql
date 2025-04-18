@@ -13,7 +13,7 @@ INSERT INTO `organizations` (`id`, `org_name`, `address`) VALUES
 
 -- Test data for admins
 INSERT INTO `admins` (`admin_wxid`, `admin_name`, `org_id`, `admin_phone`, `admin_passwd`) VALUES
-('admin001', '张三', 'org-001', '13800138001', '$2a$10$X7Q8Y9Z0A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6'),
+('admin001', '已晨', 'org-001', '18911587509', '$2a$10$X7Q8Y9Z0A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6'),
 ('admin002', '李四', 'org-002', '13800138002', '$2a$10$X7Q8Y9Z0A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6'),
 ('admin003', '王五', 'org-003', '13800138003', '$2a$10$X7Q8Y9Z0A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6'),
 ('admin004', '赵六', 'org-004', '13800138004', '$2a$10$X7Q8Y9Z0A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6'),
@@ -26,16 +26,16 @@ INSERT INTO `admins` (`admin_wxid`, `admin_name`, `org_id`, `admin_phone`, `admi
 
 -- Test data for users
 INSERT INTO `users` (`wxid`, `user_name`, `user_org`, `user_phone`, `status`, `org_id`) VALUES
-(null, '陈一', '研发部', '18911587509', 1, 'org-001'),
-('user001', '刘二', '产品部', '13900139002', 1, 'org-002'),
-(null, '张三', '市场部', '13900139003', 1, 'org-003'),
-(null, '李四', '运营部', '13900139004', 1, 'org-004'),
-(null, '王五', '设计部', '13900139005', 1, 'org-005'),
-(null, '赵六', '测试部', '13900139006', 1, 'org-006'),
-(null, '钱七', '人力资源部', '13900139007', 1, 'org-007'),
-(null, '孙八', '财务部', '13900139008', 1, 'org-008'),
-(null, '周九', '法务部', '13900139009', 1, 'org-009'),
-(null, '吴十', '行政部', '13900139010', 1, 'org-010');
+('user001', '张三', '研发部', '13900139001', 1, 'org-001'),
+('user002', '李四', '产品部', '13900139002', 1, 'org-002'),
+('user003', '王五', '市场部', '13900139003', 1, 'org-003'),
+('user004', '赵六', '运营部', '13900139004', 1, 'org-004'),
+('user005', '钱七', '设计部', '13900139005', 1, 'org-005'),
+('user006', '孙八', '测试部', '13900139006', 1, 'org-006'),
+('user007', '周九', '人力资源部', '13900139007', 1, 'org-007'),
+('user008', '吴十', '财务部', '13900139008', 1, 'org-008'),
+('user009', '郑十一', '法务部', '13900139009', 1, 'org-009'),
+('user010', '王十二', '行政部', '13900139010', 1, 'org-010');
 
 -- Test data for suggestions
 INSERT INTO `suggestions` (`title`, `problem_description`, `problem_analysis`, `suggestion`, `expected_outcome`, `image_urls`, `user_wxid`, `status`, `org_id`) VALUES
