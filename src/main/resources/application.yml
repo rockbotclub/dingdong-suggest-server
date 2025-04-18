@@ -5,7 +5,7 @@ spring:
   config:
     import: optional:file:${user.dir}/.env
   datasource:
-    url: jdbc:mysql://${MYSQL_ADDRESS}/dingdong_suggest_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
+    url: jdbc:mysql://${MYSQL_ADDRESS}/dingdong_suggest_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10&connectTimeout=60000&socketTimeout=60000&useServerPrepStmts=true&cachePrepStmts=true&prepStmtCacheSize=250&prepStmtCacheSqlLimit=2048
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -13,9 +13,10 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 5
       idle-timeout: 300000
-      connection-timeout: 20000
+      connection-timeout: 60000
       max-lifetime: 1200000
       connection-test-query: SELECT 1
+      connection-init-sql: SET NAMES utf8mb4
   jpa:
     hibernate:
       ddl-auto: validate
