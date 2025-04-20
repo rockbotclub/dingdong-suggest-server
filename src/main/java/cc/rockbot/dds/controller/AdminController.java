@@ -68,20 +68,5 @@ public class AdminController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AdminDO> updateAdmin(@PathVariable Long id, @RequestBody AdminDO admin) {
-        log.info("Updating admin with ID: {}", id);
-        admin.setId(id);
-        AdminDO updatedAdmin = adminService.updateAdmin(admin);
-        log.info("Admin updated successfully: {}", updatedAdmin.getAdminName());
-        return ResponseEntity.ok(updatedAdmin);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAdmin(@PathVariable Long id) {
-        log.info("Deleting admin with ID: {}", id);
-        adminService.deleteAdmin(id);
-        log.info("Admin deleted successfully with ID: {}", id);
-        return ResponseEntity.ok().build();
-    }
+    
 } 

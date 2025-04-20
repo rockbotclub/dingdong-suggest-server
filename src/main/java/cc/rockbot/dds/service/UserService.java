@@ -1,86 +1,98 @@
 package cc.rockbot.dds.service;
 
-import cc.rockbot.dds.model.UserDO;
-import cc.rockbot.dds.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+
+import cc.rockbot.dds.dto.UserVO;
+import cc.rockbot.dds.dto.UserLoginRequest;
+import cc.rockbot.dds.model.UserDO;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserService {
-    private final UserRepository userRepository;
+public interface UserService {
 
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    /**
+     * 微信登录
+     * 用户在客户端调用微信的login接口获取一个code作为临时token，放在AuthRequest对象中
+     * 服务器端根据此code获取用户的微信openid(wxid)
+     * 根据wxid查数据库的User表，如果数据库中没有记录，则要让用户验证手机号。
+     * 
+     * @param request
+     * @return
+     *      * 如果数据库中没有记录，则返回false
+     *      * 如果数据库中有记录，则返回true, 并返回用户信息
+     */
+    UserVO login(String wxCode);
 
-    @Transactional
-    public UserDO createUser(UserDO user) {
-        if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
-        }
-        return userRepository.save(user);
-    }
 
-    public Optional<UserDO> getUserById(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
-        return userRepository.findById(id);
-    }
+    /**
+     * 发送验证码
+     * 
+     * 根据手机号查询User表中手机号是否存在
+     *      * 如果存在，则调用发短信的接口，发送验证码
+     *      * 如果不存在，则返回"用户不存在，请联系管理员后台添加"
+     * 验证码要放在redis中，有效期为1分钟
 
-    public UserDO getUserByWxid(String wxid) {
-        if (!StringUtils.hasText(wxid)) {
-            throw new IllegalArgumentException("User WxID cannot be null or empty");
-        }
-        return userRepository.findByWxid(wxid);
-    }
+     * @param phoneNumber
+     * @return 
+     *     * 发送验证码成功后，返回true
+     *     * 发送验证码失败，返回false
+     */
+    boolean sendVerificationCode(String phoneNumber);
 
-    public List<UserDO> getUsersByOrgId(String orgId) {
-        if (!StringUtils.hasText(orgId)) {
-            throw new IllegalArgumentException("Organization ID cannot be null or empty");
-        }
-        return userRepository.findByOrgId(orgId);
-    }
+    /**
+     * 创建用户
+     * @param user 用户对象
+     * @return 创建后的用户对象
+     */
+    UserDO createUser(UserDO user);
 
-    public List<UserDO> getAllUsers() {
-        return userRepository.findAll();
-    }
+    /**
+     * 根据ID获取用户
+     * @param id 用户ID
+     * @return 用户对象，如果不存在则返回空
+     */
+    Optional<UserDO> getUserById(Long id);
 
-    @Transactional
-    public UserDO updateUser(UserDO user) {
-        if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
-        }
-        if (user.getId() == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
-        if (!userRepository.existsById(user.getId())) {
-            throw new RuntimeException("User not found");
-        }
-        return userRepository.save(user);
-    }
+    /**
+     * 获取所有用户
+     * @return 用户列表
+     */
+    List<UserDO> getAllUsers();
 
-    @Transactional
-    public void deleteUser(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
-        }
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
-        }
-        userRepository.deleteById(id);
-    }
+    /**
+     * 更新用户
+     * @param user 用户对象
+     * @return 更新后的用户对象
+     */
+    UserDO updateUser(UserDO user);
 
-    public boolean existsByWxid(String wxid) {
-        if (!StringUtils.hasText(wxid)) {
-            throw new IllegalArgumentException("User WxID cannot be null or empty");
-        }
-        return userRepository.existsByWxid(wxid);
-    }
+    /**
+     * 删除用户
+     * @param id 用户ID
+     */
+    void deleteUser(Long id);
+
+    /**
+     * 根据微信ID获取用户
+     * @param wxid 微信ID
+     * @return 用户对象，如果不存在则返回null
+     */
+    UserDO getUserByWxid(String wxid);
+
+    /**
+     * 检查微信ID是否存在
+     * @param wxid 微信ID
+     * @return 是否存在
+     */
+    boolean existsByWxid(String wxid);
+
+    /**
+     * 根据组织ID获取用户列表
+     * @param orgId 组织ID
+     * @return 用户列表
+     */
+    List<UserDO> getUsersByOrgId(String orgId);
 } 

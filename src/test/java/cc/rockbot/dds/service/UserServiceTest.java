@@ -2,6 +2,8 @@ package cc.rockbot.dds.service;
 
 import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
+import cc.rockbot.dds.service.impl.UserServiceImpl;
+import cc.rockbot.dds.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +31,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     private UserDO user;
 
@@ -258,7 +260,7 @@ class UserServiceTest {
     @Test
     void createUser_WhenUserIsNull_ShouldThrowException() {
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.createUser(null));
+        assertThrows(BusinessException.class, () -> userService.createUser(null));
         verify(userRepository, never()).save(any(UserDO.class));
     }
 
@@ -303,7 +305,7 @@ class UserServiceTest {
     @Test
     void updateUser_WhenUserIsNull_ShouldThrowException() {
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(null));
+        assertThrows(BusinessException.class, () -> userService.updateUser(null));
         verify(userRepository, never()).save(any(UserDO.class));
     }
 
@@ -318,7 +320,7 @@ class UserServiceTest {
         user.setId(null);
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.updateUser(user));
+        assertThrows(BusinessException.class, () -> userService.updateUser(user));
         verify(userRepository, never()).save(any(UserDO.class));
     }
 
@@ -329,7 +331,7 @@ class UserServiceTest {
     @Test
     void getUserByWxid_WhenWxidIsEmpty_ShouldThrowException() {
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.getUserByWxid(""));
+        assertThrows(BusinessException.class, () -> userService.getUserByWxid(""));
         verify(userRepository, never()).findByWxid(anyString());
     }
 
@@ -340,7 +342,7 @@ class UserServiceTest {
     @Test
     void getUserByWxid_WhenWxidIsNull_ShouldThrowException() {
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.getUserByWxid(null));
+        assertThrows(BusinessException.class, () -> userService.getUserByWxid(null));
         verify(userRepository, never()).findByWxid(anyString());
     }
 
@@ -351,7 +353,7 @@ class UserServiceTest {
     @Test
     void getUsersByOrgId_WhenOrgIdIsEmpty_ShouldThrowException() {
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.getUsersByOrgId(""));
+        assertThrows(BusinessException.class, () -> userService.getUsersByOrgId(""));
         verify(userRepository, never()).findByOrgId(anyString());
     }
 
@@ -362,7 +364,7 @@ class UserServiceTest {
     @Test
     void getUsersByOrgId_WhenOrgIdIsNull_ShouldThrowException() {
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.getUsersByOrgId(null));
+        assertThrows(BusinessException.class, () -> userService.getUsersByOrgId(null));
         verify(userRepository, never()).findByOrgId(anyString());
     }
 

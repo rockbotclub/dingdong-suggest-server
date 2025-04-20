@@ -1,9 +1,8 @@
 package cc.rockbot.dds.service.impl;
 
-import cc.rockbot.dds.dto.UserRegisterRequest;
+import cc.rockbot.dds.dto.UserLoginRequest;
 import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
-import cc.rockbot.dds.service.AuthService;
 import cc.rockbot.dds.service.SmsService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -16,13 +15,15 @@ import cc.rockbot.dds.dto.UserVO;
 import cc.rockbot.dds.exception.BusinessException;
 import cc.rockbot.dds.exception.ErrorCode;
 import cc.rockbot.dds.util.JwtTokenUtil;
-
+import cc.rockbot.dds.service.UserService;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
-public class AuthServiceImpl implements AuthService {
+public class UserServiceImpl implements UserService {
 
     @Resource
     private RestTemplate restTemplate;
@@ -93,38 +94,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean register(UserRegisterRequest request) {
-        if (request == null || request.getPhone() == null || request.getPhone().isEmpty() 
-                || request.getVerificationCode() == null || request.getVerificationCode().isEmpty()
-                || request.getWxid() == null || request.getWxid().isEmpty()) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号、验证码和微信openid不能为空");
-        }
-        
-        if (!smsService.verifyCode(request.getPhone(), request.getVerificationCode())) {
-            throw new BusinessException(ErrorCode.VERIFICATION_CODE_ERROR);
-        }
-
-        try {
-            // 检查用户是否已存在
-            UserDO existingUser = userRepository.findByUserPhone(request.getPhone());
-            if (existingUser == null) {
-                throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-            }
-
-            existingUser.setWxid(request.getWxid());
-            existingUser.setGmtModified(LocalDateTime.now());
-            userRepository.save(existingUser);
-            
-            return true;
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("用户注册异常", e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "用户注册异常", e);
-        }
-    }
-
-    @Override
     public boolean sendVerificationCode(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号不能为空");
@@ -140,5 +109,78 @@ public class AuthServiceImpl implements AuthService {
         }
         
         return true;
+    }
+
+    @Override
+    public UserDO createUser(UserDO user) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "用户对象不能为空");
+        }
+        user.setGmtCreate(LocalDateTime.now());
+        user.setGmtModified(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Optional<UserDO> getUserById(Long id) {
+        if (id == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "用户ID不能为空");
+        }
+        return userRepository.findById(id);
+    }
+
+    @Override
+    public List<UserDO> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public UserDO updateUser(UserDO user) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "用户对象不能为空");
+        }
+        if (user.getId() == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "用户ID不能为空");
+        }
+        if (!userRepository.existsById(user.getId())) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        user.setGmtModified(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        if (id == null) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "用户ID不能为空");
+        }
+        if (!userRepository.existsById(id)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public UserDO getUserByWxid(String wxid) {
+        if (wxid == null || wxid.isEmpty()) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "微信ID不能为空");
+        }
+        return userRepository.findByWxid(wxid);
+    }
+
+    @Override
+    public boolean existsByWxid(String wxid) {
+        if (wxid == null || wxid.isEmpty()) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "微信ID不能为空");
+        }
+        return userRepository.existsByWxid(wxid);
+    }
+
+    @Override
+    public List<UserDO> getUsersByOrgId(String orgId) {
+        if (orgId == null || orgId.isEmpty()) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "组织ID不能为空");
+        }
+        return userRepository.findByOrgId(orgId);
     }
 } 

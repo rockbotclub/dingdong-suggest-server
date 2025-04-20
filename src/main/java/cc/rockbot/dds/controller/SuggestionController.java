@@ -26,18 +26,7 @@ public class SuggestionController {
         return ResponseEntity.ok(suggestionService.getSuggestionById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateSuggestion(@PathVariable Long id, @RequestBody SuggestionRequest request) {
-        suggestionService.updateSuggestion(id, request);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSuggestion(@PathVariable Long id) {
-        suggestionService.deleteSuggestion(id);
-        return ResponseEntity.ok().build();
-    }
-
+    
     @GetMapping
     public ResponseEntity<List<SuggestionResponse>> getAllSuggestions() {
         return ResponseEntity.ok(suggestionService.getAllSuggestions());

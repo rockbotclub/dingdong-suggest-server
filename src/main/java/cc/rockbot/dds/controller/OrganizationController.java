@@ -42,15 +42,5 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.getAllOrganizations());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<OrganizationDO> updateOrganization(@PathVariable String id, @RequestBody OrganizationDO organization) {
-        organization.setId(id);
-        return ResponseEntity.ok(organizationService.updateOrganization(organization));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrganization(@PathVariable String id) {
-        organizationService.deleteOrganization(id);
-        return ResponseEntity.ok().build();
-    }
+    
 } 
