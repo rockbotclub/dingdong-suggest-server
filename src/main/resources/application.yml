@@ -52,6 +52,9 @@ springdoc:
     operationsSorter: method
     tagsSorter: alpha
     tryItOutEnabled: true
+    urls:
+      - url: https://${domain.baseUrl}/v3/api-docs
+        name: API Documentation
   api-docs:
     path: /v3/api-docs
   group-configs:
@@ -69,3 +72,7 @@ wx:
   miniapp:
     appid: ${WX_APPID}
     secret: ${WX_SECRET}
+
+# 域名配置
+domain:
+  baseUrl: springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com

@@ -17,6 +17,8 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final DomainConfig domainConfig;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
@@ -32,8 +34,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
-            "https://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
+            "https://" + domainConfig.getBaseUrl(),
+            "http://" + domainConfig.getBaseUrl(),
             "http://localhost",
             "https://localhost"
         ));
