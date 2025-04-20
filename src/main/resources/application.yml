@@ -55,6 +55,8 @@ springdoc:
     urls:
       - url: https://${domain.baseUrl}/v3/api-docs
         name: API Documentation
+    servers:
+      - url: https://${domain.baseUrl}
   api-docs:
     path: /v3/api-docs
   group-configs:
