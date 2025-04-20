@@ -1,5 +1,6 @@
 package cc.rockbot.dds.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -7,7 +8,10 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig {
+
+    private final DomainConfig domainConfig;
 
     @Bean
     public RestTemplate restTemplate() {
@@ -22,8 +26,8 @@ public class WebConfig {
                 // Allow CORS for API endpoints
                 registry.addMapping("/api/**")
                     .allowedOrigins(
-                        "http://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
-                        "https://springboot-wu96-152263-4-1352937363.sh.run.tcloudbase.com",
+                        "http://" + domainConfig.getBaseUrl(),
+                        "https://" + domainConfig.getBaseUrl(),
                         "http://localhost",
                         "https://localhost"
                     )
@@ -34,16 +38,28 @@ public class WebConfig {
 
                 // Allow CORS for Swagger UI
                 registry.addMapping("/swagger-ui/**")
-                    .allowedOrigins("*")
-                    .allowedMethods("GET", "OPTIONS")
+                    .allowedOrigins(
+                        "http://" + domainConfig.getBaseUrl(),
+                        "https://" + domainConfig.getBaseUrl(),
+                        "http://localhost",
+                        "https://localhost"
+                    )
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
+                    .allowCredentials(true)
                     .maxAge(3600);
 
                 // Allow CORS for API docs
                 registry.addMapping("/v3/api-docs/**")
-                    .allowedOrigins("*")
-                    .allowedMethods("GET", "OPTIONS")
+                    .allowedOrigins(
+                        "http://" + domainConfig.getBaseUrl(),
+                        "https://" + domainConfig.getBaseUrl(),
+                        "http://localhost",
+                        "https://localhost"
+                    )
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
+                    .allowCredentials(true)
                     .maxAge(3600);
             }
         };
