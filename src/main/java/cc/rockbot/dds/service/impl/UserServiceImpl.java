@@ -75,12 +75,14 @@ public class UserServiceImpl implements UserService {
             log.info("成功获取openid: {}", openid);
 
             // 查询数据库中是否存在该用户
-            UserDO user = userRepository.findByWxid(openid);
-            if (user == null) {
+            List<UserDO> users = userRepository.findByWxid(openid);
+            if (users == null || users.isEmpty()) {
                 log.info("新用户登录，openid: {}", openid);
                 throw new BusinessException(ErrorCode.NEW_USER_NEED_REGISTER);
             }
 
+            // 使用第一个用户的信息
+            UserDO user = users.get(0);
             log.info("用户登录成功，openid: {}", openid);
             userVO.setUser(user);
             userVO.setToken(JwtTokenUtil.generateToken(user.getId()));
@@ -165,7 +167,11 @@ public class UserServiceImpl implements UserService {
         if (wxid == null || wxid.isEmpty()) {
             throw new BusinessException(ErrorCode.PARAM_ERROR, "微信ID不能为空");
         }
-        return userRepository.findByWxid(wxid);
+        List<UserDO> users = userRepository.findByWxid(wxid);
+        if (users == null || users.isEmpty()) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        return users.get(0);
     }
 
     @Override

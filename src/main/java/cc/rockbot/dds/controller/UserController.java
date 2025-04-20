@@ -16,7 +16,11 @@ import cc.rockbot.dds.exception.ErrorCode;
 import cc.rockbot.dds.exception.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-
+import cc.rockbot.dds.model.OrganizationDO;
+import cc.rockbot.dds.service.OrganizationService;
+import java.util.List;
+import java.util.stream.Collectors;
+import cc.rockbot.dds.util.JwtTokenUtil;
 
 @Slf4j
 @RestController
@@ -31,6 +35,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private OrganizationService organizationService;
 
 
     @PostMapping("/login-wx")
@@ -106,4 +113,20 @@ public class UserController {
                     .body(new ErrorResponse(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试"));
         }
     }
+
+     /** 
+     * 根据用户微信id查询用户所属的组织
+     * PostMapping，把JWT token作为参数
+     */
+    @PostMapping("/user-org")
+    public ResponseEntity<List<OrganizationDO>> getOrganizationsByUserWxid(@RequestBody String jwtToken) {
+        // 从JWT token中获取用户信息
+        String wxid = JwtTokenUtil.getWxidFromToken(jwtToken);
+
+        List<UserDO> userDOs = userRepository.findByWxid(wxid);
+        List<String> orgIds = userDOs.stream().map(UserDO::getOrgId).collect(Collectors.toList());
+        List<OrganizationDO> organizationDOs = organizationService.getOrganizationsByOrgIds(orgIds);
+        return ResponseEntity.ok(organizationDOs);
+    }
+
 } 

@@ -69,4 +69,9 @@ public class OrganizationService {
         }
         return organizationRepository.existsById(id);
     }
+
+    public List<OrganizationDO> getOrganizationsByOrgIds(List<String> orgIds) {
+        return organizationRepository.findAllById(orgIds);
+    }
+
 } 

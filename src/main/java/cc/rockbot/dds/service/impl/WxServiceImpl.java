@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -54,9 +55,9 @@ public class WxServiceImpl implements WxService {
         log.info("Successfully obtained openid: {}", openid);
         
         // 查找或创建用户
-        UserDO user = userRepository.findByWxid(openid);
-        log.info("User found in database: {}", user != null);
-        if (user == null) {
+        List<UserDO> users = userRepository.findByWxid(openid);
+        UserDO user;
+        if (users == null || users.isEmpty()) {
             user = new UserDO();
             user.setWxid(openid);
             user.setGmtCreate(LocalDateTime.now());
@@ -66,6 +67,8 @@ public class WxServiceImpl implements WxService {
             user.setUserPhone("");
             user.setOrgId("");
             user = userRepository.save(user);
+        } else {
+            user = users.get(0);
         }
 
         // 生成token
@@ -86,23 +89,25 @@ public class WxServiceImpl implements WxService {
 
     @Override
     public String refreshToken(String wxid) {
-        UserDO user = userRepository.findByWxid(wxid);
-        if (user == null) {
+        List<UserDO> users = userRepository.findByWxid(wxid);
+        if (users == null || users.isEmpty()) {
             throw new RuntimeException("用户不存在");
         }
 
+        UserDO user = users.get(0);
         String role = user.getStatus() == 1 ? "ROLE_ADMIN" : "ROLE_USER";
         return jwtTokenProvider.generateToken(wxid, role);
     }
 
     @Override
     public WxLoginResponse updateUserInfo(String wxid, UpdateUserInfoRequest request) {
-        UserDO user = userRepository.findByWxid(wxid);
-        if (user == null) {
+        List<UserDO> users = userRepository.findByWxid(wxid);
+        if (users == null || users.isEmpty()) {
             throw new RuntimeException("用户不存在");
         }
 
         // 更新用户信息
+        UserDO user = users.get(0);
         user.setUserName(request.getUserName());
         user.setUserOrg(request.getUserOrg());
         user.setUserPhone(request.getUserPhone());

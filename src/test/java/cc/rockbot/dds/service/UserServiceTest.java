@@ -4,6 +4,7 @@ import cc.rockbot.dds.model.UserDO;
 import cc.rockbot.dds.repository.UserRepository;
 import cc.rockbot.dds.service.impl.UserServiceImpl;
 import cc.rockbot.dds.exception.BusinessException;
+import cc.rockbot.dds.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -202,7 +203,7 @@ class UserServiceTest {
         // Given
         UserDO user = new UserDO();
         user.setWxid("test_wxid");
-        when(userRepository.findByWxid("test_wxid")).thenReturn(user);
+        when(userRepository.findByWxid("test_wxid")).thenReturn(Collections.singletonList(user));
 
         // When
         UserDO result = userService.getUserByWxid("test_wxid");
@@ -210,6 +211,21 @@ class UserServiceTest {
         // Then
         assertNotNull(result);
         assertEquals("test_wxid", result.getWxid());
+        verify(userRepository).findByWxid("test_wxid");
+    }
+
+    /**
+     * 测试通过微信ID获取用户功能，当用户不存在时
+     * 验证是否能正确处理用户不存在的情况
+     */
+    @Test
+    void getUserByWxid_WhenNotFound_ShouldThrowException() {
+        // Given
+        when(userRepository.findByWxid("test_wxid")).thenReturn(Collections.emptyList());
+
+        // When & Then
+        BusinessException exception = assertThrows(BusinessException.class, () -> userService.getUserByWxid("test_wxid"));
+        assertEquals(ErrorCode.USER_NOT_FOUND.getCode(), exception.getErrorCode().getCode());
         verify(userRepository).findByWxid("test_wxid");
     }
 
@@ -384,18 +400,5 @@ class UserServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
         verify(userRepository).findByOrgId("test_org");
-    }
-
-    @Test
-    void getUserByWxid_WhenNotFound_ShouldReturnNull() {
-        // Given
-        when(userRepository.findByWxid("non_existent_wxid")).thenReturn(null);
-
-        // When
-        UserDO result = userService.getUserByWxid("non_existent_wxid");
-
-        // Then
-        assertNull(result);
-        verify(userRepository).findByWxid("non_existent_wxid");
     }
 } 
