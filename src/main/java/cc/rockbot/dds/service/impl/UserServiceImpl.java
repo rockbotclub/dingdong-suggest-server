@@ -209,10 +209,8 @@ public class UserServiceImpl implements UserService {
              }
             log.info("成功获取openid: {}", wxId);
             // 保存用户
-            UserDO savedUser = new UserDO();
-            savedUser.setId(userDO.getId());
-            savedUser.setWxid(wxId);
-            userRepository.save(savedUser);
+            userDO.setWxid(wxId);
+            userRepository.save(userDO);
 
             UserRegisterDTO userRegisterDTO = new UserRegisterDTO();
             userRegisterDTO.setJwtToken(jwtTokenService.generateTokenIfNotExist(wxId));
