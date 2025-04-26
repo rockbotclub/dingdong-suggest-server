@@ -15,10 +15,10 @@ public class OrganizationDO {
     @Column(name = "id", nullable = false)
     private String id;
 
-    @Column(name = "gmt_create", nullable = false, updatable = false)
+    @Column(name = "gmt_create", updatable = false)
     private LocalDateTime gmtCreate;
 
-    @Column(name = "gmt_modified", nullable = false)
+    @Column(name = "gmt_modified")
     private LocalDateTime gmtModified;
 
     @NotBlank(message = "Organization name cannot be empty")

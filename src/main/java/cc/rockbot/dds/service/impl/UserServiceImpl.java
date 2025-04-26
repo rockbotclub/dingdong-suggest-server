@@ -200,15 +200,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserRegisterDTO register(UserDO userDO, String wxCode) {
-
         try {
             // 获取微信ID
             String wxId = getWxIdByWxCode(wxCode);
             if (wxId == null || wxId.isEmpty()) {
                 throw new BusinessException(ErrorCode.WX_OPENID_NOT_FOUND);
-             }
+            }
             log.info("成功获取openid: {}", wxId);
-            // 保存用户
+
+            // 设置用户信息
             userDO.setWxid(wxId);
             userRepository.save(userDO);
 
@@ -222,7 +222,6 @@ public class UserServiceImpl implements UserService {
             log.error("微信登录异常", e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "微信登录异常", e);
         }
-        
     }
 
 } 

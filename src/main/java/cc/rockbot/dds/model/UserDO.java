@@ -13,15 +13,15 @@ public class UserDO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "gmt_create", nullable = false, updatable = false)
+    @Column(name = "gmt_create", updatable = false)
     private LocalDateTime gmtCreate;
 
-    @Column(name = "gmt_modified", nullable = false)
+    @Column(name = "gmt_modified")
     private LocalDateTime gmtModified;
 
     @NotBlank(message = "Wxid cannot be empty")
     @Size(max = 255, message = "Wxid must be less than 255 characters")
-    @Column(name = "wxid", nullable = false, unique = true)
+    @Column(name = "wxid", unique = true)
     private String wxid;
 
     @NotBlank(message = "User name cannot be empty")
