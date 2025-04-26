@@ -23,6 +23,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import cc.rockbot.dds.dto.SuggestionLiteDTO;
 
 /**
  * 建议服务测试类
@@ -143,26 +144,22 @@ class SuggestionServiceTest {
     @Test
     void getAllSuggestions_ShouldReturnAllSuggestions() {
         List<SuggestionDO> suggestions = Arrays.asList(suggestion);
-        when(suggestionRepository.findAll()).thenReturn(suggestions);
+        when(suggestionRepository.findByUserWxidAndOrgIdAndYear(anyString(), anyString(), anyString()))
+            .thenReturn(suggestions);
 
-        List<SuggestionResponse> responses = suggestionService.getAllSuggestions();
+        List<SuggestionLiteDTO> responses = suggestionService.getAllSuggestions(
+            "test_jwt_token", 
+            "test_org", 
+            "2024"
+        );
 
         assertNotNull(responses);
         assertEquals(1, responses.size());
-        SuggestionResponse response = responses.get(0);
+        SuggestionLiteDTO response = responses.get(0);
         assertEquals(1L, response.getId());
         assertEquals("Test Title", response.getTitle());
-        assertEquals("Test Problem Description", response.getProblemDescription());
-        assertEquals("Test Problem Analysis", response.getProblemAnalysis());
-        assertEquals("Test Suggestion", response.getSuggestion());
-        assertEquals("Test Expected Outcome", response.getExpectedOutcome());
         assertEquals(SuggestionStatusEnum.SUBMITTED.getCode(), response.getStatus());
-        assertEquals(SuggestionStatusEnum.SUBMITTED.getDescription(), response.getStatusDescription());
-        assertEquals("test_wxid", response.getUserWxid());
-        assertEquals("test_org", response.getOrgId());
-        assertNotNull(response.getImages());
-        assertEquals(1, response.getImages().size());
-        assertEquals("https://example.com/image.jpg", response.getImages().get(0).getUrl());
+        assertNotNull(response.getCreateTime());
     }
 
     /**

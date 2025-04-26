@@ -5,8 +5,7 @@ import cc.rockbot.dds.repository.OrganizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
+import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +27,7 @@ public class OrganizationService {
     }
 
     public Optional<OrganizationDO> getOrganizationById(String id) {
-        if (!StringUtils.hasText(id)) {
+        if (StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("Organization ID cannot be null or empty");
         }
         return organizationRepository.findById(id);
@@ -43,7 +42,7 @@ public class OrganizationService {
         if (organization == null) {
             throw new IllegalArgumentException("Organization cannot be null");
         }
-        if (!StringUtils.hasText(organization.getId())) {
+        if (StringUtils.isBlank(organization.getId())) {
             throw new IllegalArgumentException("Organization ID cannot be null");
         }
         if (!organizationRepository.existsById(organization.getId())) {
@@ -54,7 +53,7 @@ public class OrganizationService {
 
     @Transactional
     public void deleteOrganization(String id) {
-        if (!StringUtils.hasText(id)) {
+        if (StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("Organization ID cannot be null or empty");
         }
         if (!organizationRepository.existsById(id)) {
@@ -64,7 +63,7 @@ public class OrganizationService {
     }
 
     public boolean existsById(String id) {
-        if (!StringUtils.hasText(id)) {
+        if (StringUtils.isBlank(id)) {
             throw new IllegalArgumentException("Organization ID cannot be null or empty");
         }
         return organizationRepository.existsById(id);

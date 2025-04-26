@@ -2,6 +2,7 @@ package cc.rockbot.dds.controller;
 
 import cc.rockbot.dds.dto.SuggestionRequest;
 import cc.rockbot.dds.dto.SuggestionResponse;
+import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import cc.rockbot.dds.service.SuggestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +28,19 @@ public class SuggestionController {
     }
 
     
+    /**
+     * 根据JWT token获取用户的所有建议列表
+     * 
+     * @param jwtToken JWT token
+     * @param orgId 组织ID
+     * @param year 年份
+     * @return 建议列表
+     */
     @GetMapping
-    public ResponseEntity<List<SuggestionResponse>> getAllSuggestions() {
-        return ResponseEntity.ok(suggestionService.getAllSuggestions());
+    public ResponseEntity<List<SuggestionLiteDTO>> getAllSuggestions(@RequestParam String jwtToken
+                                                                    , @RequestParam String orgId
+                                                                    , @RequestParam String year) {
+        return ResponseEntity.ok(suggestionService.getAllSuggestions(jwtToken, orgId, year));
     }
 
     @PutMapping("/{id}/status")

@@ -2,7 +2,7 @@ package cc.rockbot.dds.service;
 
 import cc.rockbot.dds.dto.SuggestionRequest;
 import cc.rockbot.dds.dto.SuggestionResponse;
-
+import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import java.util.List;
 
 /**
@@ -59,9 +59,12 @@ public interface SuggestionService {
     void deleteSuggestion(Long id);
 
     /**
-     * 获取所有建议
-     *
-     * @return 建议响应对象列表
+     * 根据JWT token获取所有建议
+     * 
+     * @param jwtToken JWT token
+     * @param orgId 组织ID
+     * @param year 年份
+     * @return 建议简要信息列表
      */
-    List<SuggestionResponse> getAllSuggestions();
+    List<SuggestionLiteDTO> getAllSuggestions(String jwtToken, String orgId, String year);
 } 

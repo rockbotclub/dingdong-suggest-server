@@ -3,10 +3,8 @@ package cc.rockbot.dds.service;
 
 import org.springframework.stereotype.Service;
 
-import cc.rockbot.dds.dto.UserVO;
-import cc.rockbot.dds.dto.UserLoginRequest;
 import cc.rockbot.dds.model.UserDO;
-
+import cc.rockbot.dds.dto.UserRegisterDTO;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +22,7 @@ public interface UserService {
      *      * 如果数据库中没有记录，则返回false
      *      * 如果数据库中有记录，则返回true, 并返回用户信息
      */
-    UserVO login(String wxCode);
+    UserRegisterDTO loginByWxCode(String wxCode);
 
 
     /**
@@ -95,4 +93,12 @@ public interface UserService {
      * @return 用户列表
      */
     List<UserDO> getUsersByOrgId(String orgId);
+
+    /**
+     * 保存用户并生成JWT token
+     * @param userDO 用户对象
+     * @param wxCode 微信临时code
+     * @return 用户注册DTO
+     */
+    UserRegisterDTO register(UserDO userDO, String wxCode);
 } 

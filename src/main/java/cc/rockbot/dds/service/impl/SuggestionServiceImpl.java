@@ -16,12 +16,18 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import cc.rockbot.dds.util.JwtTokenService;
+import org.apache.commons.lang3.StringUtils;
+import cc.rockbot.dds.dto.SuggestionLiteDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 @Service
 @RequiredArgsConstructor
 public class SuggestionServiceImpl implements SuggestionService {
 
     private final SuggestionRepository suggestionRepository;
+
+    @Autowired
+    private JwtTokenService jwtTokenService;
 
     @Override
     @Transactional
@@ -120,10 +126,24 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SuggestionResponse> getAllSuggestions() {
-        return suggestionRepository.findAll().stream()
-                .map(this::convertToResponse)
+    public List<SuggestionLiteDTO> getAllSuggestions(String jwtToken, String orgId, String year) {
+        String wxid = jwtTokenService.getWxidFromToken(jwtToken);
+        if (StringUtils.isBlank(wxid)) {
+            throw new RuntimeException("Invalid JWT token");
+        }
+        List<SuggestionDO> suggestions = suggestionRepository.findByUserWxidAndOrgIdAndYear(wxid, orgId, year);
+        return suggestions.stream()
+                .map(this::convertToLiteDTO)
                 .collect(Collectors.toList());
+    }
+
+    private SuggestionLiteDTO convertToLiteDTO(SuggestionDO suggestion) {
+        SuggestionLiteDTO dto = new SuggestionLiteDTO();
+        dto.setId(suggestion.getId());
+        dto.setTitle(suggestion.getTitle());
+        dto.setStatus(suggestion.getStatus().getCode());
+        dto.setCreateTime(suggestion.getGmtCreate());
+        return dto;
     }
 
     private SuggestionResponse convertToResponse(SuggestionDO suggestion) {
