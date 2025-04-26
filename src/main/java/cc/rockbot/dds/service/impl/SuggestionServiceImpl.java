@@ -131,7 +131,7 @@ public class SuggestionServiceImpl implements SuggestionService {
         if (StringUtils.isBlank(wxid)) {
             throw new RuntimeException("Invalid JWT token");
         }
-        List<SuggestionDO> suggestions = suggestionRepository.findByUserWxidAndOrgIdAndYear(wxid, orgId, year);
+        List<SuggestionDO> suggestions = suggestionRepository.findByUserWxidAndOrgIdAndYear(wxid, orgId, Integer.parseInt(year));
         return suggestions.stream()
                 .map(this::convertToLiteDTO)
                 .collect(Collectors.toList());

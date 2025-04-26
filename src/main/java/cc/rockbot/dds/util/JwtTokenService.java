@@ -53,6 +53,8 @@ public class JwtTokenService {
             newToken.setToken(token);
             newToken.setWxid(wxid);
             newToken.setGmtExpired(expiredTime);
+            newToken.setGmtCreate(LocalDateTime.now());
+            newToken.setGmtModified(LocalDateTime.now());
             jwtTokenRepository.save(newToken);
         }
 

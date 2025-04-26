@@ -11,10 +11,11 @@ import cc.rockbot.dds.exception.BusinessException;
 import cc.rockbot.dds.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/suggestions")
+@Tag(name = "建议管理", description = "建议相关的接口")
 @RequiredArgsConstructor
 public class SuggestionController extends BaseController {
 

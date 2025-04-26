@@ -208,8 +208,16 @@ public class UserServiceImpl implements UserService {
             }
             log.info("成功获取openid: {}", wxId);
 
+            // 检查用户对象
+            if (userDO == null) {
+                log.error("用户对象为null");
+                throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            }
+
             // 设置用户信息
             userDO.setWxid(wxId);
+            
+            // 保存用户
             userRepository.save(userDO);
 
             UserRegisterDTO userRegisterDTO = new UserRegisterDTO();

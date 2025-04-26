@@ -20,6 +20,6 @@ public interface SuggestionRepository extends JpaRepository<SuggestionDO, Long> 
     List<SuggestionDO> findByUserWxidAndOrgIdAndYear(
         @Param("userWxid") String userWxid,
         @Param("orgId") String orgId,
-        @Param("year") String year
+        @Param("year") Integer year
     );
 } 
