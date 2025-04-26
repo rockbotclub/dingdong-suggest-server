@@ -14,7 +14,9 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return true;
+        // 排除Swagger相关的端点
+        String className = returnType.getContainingClass().getName();
+        return !className.contains("springdoc") && !className.contains("swagger");
     }
 
     @Override
