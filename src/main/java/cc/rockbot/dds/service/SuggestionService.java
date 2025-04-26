@@ -1,7 +1,6 @@
 package cc.rockbot.dds.service;
 
 import cc.rockbot.dds.dto.CreateSuggestionRequest;
-import cc.rockbot.dds.dto.CreateSuggestionResponse;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import cc.rockbot.dds.model.SuggestionDO;
 import java.util.List;

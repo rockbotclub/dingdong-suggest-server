@@ -155,6 +155,24 @@
 }
 ```
 
+### 根据组织ID获取组织信息
+- **URL**: `/api/organizations/orgid/{orgId}`
+- **方法**: GET
+- **描述**: 根据组织ID获取组织信息
+- **响应**:
+```json
+{
+    "code": 200,
+    "message": "success",
+    "data": {
+        "id": "string",
+        "orgId": "string",
+        "orgName": "string",
+        "orgDesc": "string"
+    }
+}
+```
+
 ### 获取所有组织
 - **URL**: `/api/organizations`
 - **方法**: GET
@@ -251,22 +269,9 @@
 ### 更新建议状态
 - **URL**: `/api/v1/suggestions/{id}/status`
 - **方法**: PUT
-- **描述**: 更新建议状态
+- **描述**: 更新建议的状态
 - **参数**:
-  - `status`: 新状态
-- **响应**:
-```json
-{
-    "code": 200,
-    "message": "success",
-    "data": null
-}
-```
-
-### 撤回建议
-- **URL**: `/api/v1/suggestions/{id}/withdraw`
-- **方法**: PUT
-- **描述**: 撤回建议
+  - `status`: 新的状态值
 - **响应**:
 ```json
 {
@@ -286,8 +291,7 @@
 ```json
 {
     "adminName": "string",
-    "adminWxid": "string",
-    "orgId": "string"
+    "adminWxid": "string"
 }
 ```
 - **响应**:
@@ -298,8 +302,7 @@
     "data": {
         "id": "number",
         "adminName": "string",
-        "adminWxid": "string",
-        "orgId": "string"
+        "adminWxid": "string"
     }
 }
 ```
@@ -316,8 +319,24 @@
     "data": {
         "id": "number",
         "adminName": "string",
-        "adminWxid": "string",
-        "orgId": "string"
+        "adminWxid": "string"
+    }
+}
+```
+
+### 根据微信ID获取管理员
+- **URL**: `/api/admins/wxid/{adminWxid}`
+- **方法**: GET
+- **描述**: 根据微信ID获取管理员信息
+- **响应**:
+```json
+{
+    "code": 200,
+    "message": "success",
+    "data": {
+        "id": "number",
+        "adminName": "string",
+        "adminWxid": "string"
     }
 }
 ```
@@ -335,8 +354,7 @@
         {
             "id": "number",
             "adminName": "string",
-            "adminWxid": "string",
-            "orgId": "string"
+            "adminWxid": "string"
         }
     ]
 }

@@ -1,7 +1,6 @@
 package cc.rockbot.dds.controller;
 
 import cc.rockbot.dds.dto.CreateSuggestionRequest;
-import cc.rockbot.dds.dto.CreateSuggestionResponse;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import cc.rockbot.dds.service.SuggestionService;
 import lombok.RequiredArgsConstructor;
