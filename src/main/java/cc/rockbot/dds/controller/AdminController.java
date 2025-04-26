@@ -4,9 +4,10 @@ import cc.rockbot.dds.model.AdminDO;
 import cc.rockbot.dds.service.AdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import cc.rockbot.dds.dto.ApiResponse;
+import cc.rockbot.dds.exception.BusinessException;
+import cc.rockbot.dds.exception.ErrorCode;
 import java.util.List;
 
 @Slf4j
@@ -21,52 +22,79 @@ public class AdminController {
     }
 
     @PostMapping
-    public ResponseEntity<AdminDO> createAdmin(@RequestBody AdminDO admin) {
-        log.info("Creating new admin: {}", admin.getAdminName());
-        AdminDO createdAdmin = adminService.createAdmin(admin);
-        log.info("Admin created successfully with ID: {}", createdAdmin.getId());
-        return ResponseEntity.ok(createdAdmin);
+    public ApiResponse<AdminDO> createAdmin(@RequestBody AdminDO admin) {
+        try {
+            if (admin == null) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "管理员信息不能为空");
+            }
+            log.info("Creating new admin: {}", admin.getAdminName());
+            AdminDO createdAdmin = adminService.createAdmin(admin);
+            log.info("Admin created successfully with ID: {}", createdAdmin.getId());
+            return ApiResponse.success(createdAdmin);
+        } catch (BusinessException e) {
+            log.warn("创建管理员业务异常: {}", e.getMessage());
+            return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
+        } catch (Exception e) {
+            log.error("创建管理员系统异常", e);
+            return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AdminDO> getAdminById(@PathVariable Long id) {
-        log.info("Fetching admin by ID: {}", id);
-        return adminService.getAdminById(id)
-                .map(admin -> {
-                    log.info("Admin found: {}", admin.getAdminName());
-                    return ResponseEntity.ok(admin);
-                })
-                .orElseGet(() -> {
-                    log.warn("Admin not found with ID: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+    public ApiResponse<AdminDO> getAdminById(@PathVariable Long id) {
+        try {
+            if (id == null) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "管理员ID不能为空");
+            }
+            log.info("Fetching admin by ID: {}", id);
+            AdminDO admin = adminService.getAdminById(id)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.ADMIN_NOT_FOUND));
+            log.info("Admin found: {}", admin.getAdminName());
+            return ApiResponse.success(admin);
+        } catch (BusinessException e) {
+            log.warn("获取管理员业务异常: {}", e.getMessage());
+            return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
+        } catch (Exception e) {
+            log.error("获取管理员系统异常", e);
+            return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
+        }
     }
 
     @GetMapping("/wxid/{adminWxid}")
-    public ResponseEntity<AdminDO> getAdminByWxid(@PathVariable String adminWxid) {
-        log.info("Fetching admin by wxid: {}", adminWxid);
-        AdminDO admin = adminService.getAdminByWxid(adminWxid);
-        if (admin != null) {
+    public ApiResponse<AdminDO> getAdminByWxid(@PathVariable String adminWxid) {
+        try {
+            if (adminWxid == null || adminWxid.isEmpty()) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "管理员微信ID不能为空");
+            }
+            log.info("Fetching admin by wxid: {}", adminWxid);
+            AdminDO admin = adminService.getAdminByWxid(adminWxid);
+            if (admin == null) {
+                throw new BusinessException(ErrorCode.ADMIN_NOT_FOUND);
+            }
             log.info("Admin found: {}", admin.getAdminName());
-            return ResponseEntity.ok(admin);
-        } else {
-            log.warn("Admin not found with wxid: {}", adminWxid);
-            return ResponseEntity.notFound().build();
+            return ApiResponse.success(admin);
+        } catch (BusinessException e) {
+            log.warn("获取管理员业务异常: {}", e.getMessage());
+            return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
+        } catch (Exception e) {
+            log.error("获取管理员系统异常", e);
+            return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<AdminDO>> getAllAdmins() {
-        log.info("Fetching all admins");
+    public ApiResponse<List<AdminDO>> getAllAdmins() {
         try {
+            log.info("Fetching all admins");
             List<AdminDO> admins = adminService.getAllAdmins();
             log.info("Found {} admins", admins.size());
-            return ResponseEntity.ok(admins);
+            return ApiResponse.success(admins);
+        } catch (BusinessException e) {
+            log.warn("获取所有管理员业务异常: {}", e.getMessage());
+            return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
         } catch (Exception e) {
-            log.error("Error while fetching all admins", e);
-            throw e;
+            log.error("获取所有管理员系统异常", e);
+            return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
         }
     }
-
-    
 } 
