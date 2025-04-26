@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/suggestions")
 @RequiredArgsConstructor
-public class SuggestionController {
+public class SuggestionController extends BaseController {
 
     private final SuggestionService suggestionService;
 
