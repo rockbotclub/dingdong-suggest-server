@@ -1,8 +1,7 @@
 package cc.rockbot.dds.service.impl;
 
 import cc.rockbot.dds.dto.ProblemImage;
-import cc.rockbot.dds.dto.SuggestionRequest;
-import cc.rockbot.dds.dto.SuggestionResponse;
+import cc.rockbot.dds.dto.CreateSuggestionRequest;
 import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import cc.rockbot.dds.model.SuggestionDO;
 import cc.rockbot.dds.repository.SuggestionRepository;
@@ -20,6 +19,7 @@ import cc.rockbot.dds.util.JwtTokenService;
 import org.apache.commons.lang3.StringUtils;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+
 @Service
 @RequiredArgsConstructor
 public class SuggestionServiceImpl implements SuggestionService {
@@ -31,30 +31,10 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     @Override
     @Transactional
-    public SuggestionResponse createSuggestion(SuggestionRequest request) {
-        SuggestionDO suggestion = new SuggestionDO();
-        suggestion.setTitle(request.getTitle());
-        suggestion.setProblemDescription(request.getProblemDescription());
-        suggestion.setProblemAnalysis(request.getProblemAnalysis());
-        suggestion.setSuggestion(request.getSuggestion());
-        suggestion.setExpectedOutcome(request.getExpectedOutcome());
-        suggestion.setStatus(SuggestionStatusEnum.SUBMITTED);
-        suggestion.setGmtCreate(LocalDateTime.now());
-        suggestion.setGmtModified(LocalDateTime.now());
-        suggestion.setUserWxid(request.getUserWxid());
-        suggestion.setOrgId(request.getOrgId());
+    public SuggestionDO createSuggestion(SuggestionDO suggestionDO) {
         
-        // Add logging and validation for imageUrls
-        if (request.getImages() != null) {
-            String imageUrlsJson = JSON.toJSONString(request.getImages());
-            System.out.println("Debug - Serialized imageUrls: " + imageUrlsJson);
-            suggestion.setImageUrls(imageUrlsJson);
-        } else {
-            suggestion.setImageUrls("[]");
-        }
-
-        suggestion = suggestionRepository.save(suggestion);
-        return convertToResponse(suggestion);
+        suggestionDO = suggestionRepository.save(suggestionDO);
+        return suggestionDO;
     }
 
     @Override
@@ -82,15 +62,15 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     @Override
     @Transactional(readOnly = true)
-    public SuggestionResponse getSuggestionById(Long id) {
+    public SuggestionDO getSuggestionById(Long id) {
         SuggestionDO suggestion = suggestionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Suggestion not found"));
-        return convertToResponse(suggestion);
+        return suggestion;
     }
 
     @Override
     @Transactional
-    public SuggestionResponse updateSuggestion(Long id, SuggestionRequest request) {
+    public SuggestionDO updateSuggestion(Long id, CreateSuggestionRequest request) {
         SuggestionDO suggestion = suggestionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Suggestion not found"));
 
@@ -112,7 +92,7 @@ public class SuggestionServiceImpl implements SuggestionService {
         }
 
         suggestion = suggestionRepository.save(suggestion);
-        return convertToResponse(suggestion);
+        return suggestion;
     }
 
     @Override
@@ -146,35 +126,4 @@ public class SuggestionServiceImpl implements SuggestionService {
         return dto;
     }
 
-    private SuggestionResponse convertToResponse(SuggestionDO suggestion) {
-        SuggestionResponse response = new SuggestionResponse();
-        response.setId(suggestion.getId());
-        response.setTitle(suggestion.getTitle());
-        response.setProblemDescription(suggestion.getProblemDescription());
-        response.setProblemAnalysis(suggestion.getProblemAnalysis());
-        response.setSuggestion(suggestion.getSuggestion());
-        response.setExpectedOutcome(suggestion.getExpectedOutcome());
-        response.setStatus(suggestion.getStatus().getCode());
-        response.setStatusDescription(suggestion.getStatus().getDescription());
-        response.setCreateTime(suggestion.getGmtCreate());
-        response.setUpdateTime(suggestion.getGmtModified());
-        response.setUserWxid(suggestion.getUserWxid());
-        response.setOrgId(suggestion.getOrgId());
-        
-        // Add logging to debug the imageUrls value
-        System.out.println("Debug - imageUrls value: " + suggestion.getImageUrls());
-        
-        // Add null check and empty string check
-        if (suggestion.getImageUrls() != null && !suggestion.getImageUrls().trim().isEmpty()) {
-            try {
-                response.setImages(JSON.parseArray(suggestion.getImageUrls(), ProblemImage.class));
-            } catch (Exception e) {
-                System.err.println("Error parsing imageUrls: " + e.getMessage());
-                response.setImages(Collections.emptyList());
-            }
-        } else {
-            response.setImages(Collections.emptyList());
-        }
-        return response;
-    }
 } 

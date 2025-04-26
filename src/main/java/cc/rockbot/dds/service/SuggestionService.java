@@ -1,8 +1,9 @@
 package cc.rockbot.dds.service;
 
-import cc.rockbot.dds.dto.SuggestionRequest;
-import cc.rockbot.dds.dto.SuggestionResponse;
+import cc.rockbot.dds.dto.CreateSuggestionRequest;
+import cc.rockbot.dds.dto.CreateSuggestionResponse;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
+import cc.rockbot.dds.model.SuggestionDO;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public interface SuggestionService {
      * @return 创建后的建议响应对象
      * @throws RuntimeException 当创建建议失败时抛出
      */
-    SuggestionResponse createSuggestion(SuggestionRequest request);
+    SuggestionDO createSuggestion(SuggestionDO suggestionDO);
 
     /**
      * 更新建议状态
@@ -38,7 +39,7 @@ public interface SuggestionService {
      * @return 建议响应对象
      * @throws RuntimeException 当建议不存在时抛出
      */
-    SuggestionResponse getSuggestionById(Long id);
+    SuggestionDO getSuggestionById(Long id);
 
     /**
      * 更新建议信息
@@ -48,7 +49,7 @@ public interface SuggestionService {
      * @return 更新后的建议响应对象
      * @throws RuntimeException 当建议不存在或更新失败时抛出
      */
-    SuggestionResponse updateSuggestion(Long id, SuggestionRequest request);
+    SuggestionDO updateSuggestion(Long id, CreateSuggestionRequest request);
 
     /**
      * 删除建议

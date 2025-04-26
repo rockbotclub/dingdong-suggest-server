@@ -8,10 +8,10 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.validation.Valid;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import java.io.Serializable;
 /**
  * 建议响应数据传输对象
  * 用于返回建议的详细信息
@@ -20,8 +20,8 @@ import java.util.List;
  * @since 1.0
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class SuggestionResponse extends SuggestionRequest {
+@Builder
+public class CreateSuggestionResponse implements Serializable {
     
     private static final long serialVersionUID = 1L;
     
@@ -43,27 +43,5 @@ public class SuggestionResponse extends SuggestionRequest {
     @Max(value = 3, message = "状态值不能大于3")
     private Integer status;
 
-    /**
-     * 建议状态描述
-     */
-    private String statusDescription;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updateTime;
-
-    /**
-     * 问题图片列表
-     * 最多3张图片，以JSON格式存储在数据库中
-     */
-    @Size(max = 3, message = "最多只能上传3张图片")
-    @Valid
-    @JsonProperty("images")
-    private List<ProblemImage> images;
+    
 }

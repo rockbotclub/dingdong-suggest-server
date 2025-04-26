@@ -17,7 +17,7 @@ import java.util.List;
  * @since 1.0
  */
 @Data
-public class SuggestionRequest implements Serializable {
+public class CreateSuggestionRequest implements Serializable {
     
     private static final long serialVersionUID = 1L;
     
@@ -60,12 +60,12 @@ public class SuggestionRequest implements Serializable {
     private String expectedOutcome;
 
     /**
-     * 用户微信ID
+     * 用户jwt token
      * 不能为空，最大长度255字符
      */
-    @NotBlank(message = "用户微信ID不能为空")
-    @Size(max = 255, message = "用户微信ID长度不能超过255个字符")
-    private String userWxid;
+    @NotBlank(message = "用户jwt token不能为空")
+    @Size(max = 255, message = "用户jwt token长度不能超过255个字符")
+    private String jwtToken;
 
     /**
      * 组织ID

@@ -1,7 +1,7 @@
 package cc.rockbot.dds.controller;
 
-import cc.rockbot.dds.dto.SuggestionRequest;
-import cc.rockbot.dds.dto.SuggestionResponse;
+import cc.rockbot.dds.dto.CreateSuggestionRequest;
+import cc.rockbot.dds.dto.CreateSuggestionResponse;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import cc.rockbot.dds.service.SuggestionService;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +9,16 @@ import org.springframework.web.bind.annotation.*;
 import cc.rockbot.dds.dto.ApiResponse;
 import cc.rockbot.dds.exception.BusinessException;
 import cc.rockbot.dds.exception.ErrorCode;
+import cc.rockbot.dds.model.SuggestionDO;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.StringUtils;
+import cc.rockbot.dds.util.JwtTokenService;
+import java.time.LocalDateTime;
+import cc.rockbot.dds.enums.SuggestionStatusEnum;
+import com.alibaba.fastjson.JSON;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/suggestions")
@@ -21,13 +28,21 @@ public class SuggestionController extends BaseController {
 
     private final SuggestionService suggestionService;
 
+    private final JwtTokenService jwtTokenService;
+
     @PostMapping
-    public ApiResponse<SuggestionResponse> createSuggestion(@RequestBody SuggestionRequest request) {
+    public ApiResponse<SuggestionDO> createSuggestion(@RequestBody CreateSuggestionRequest request) {
         try {
             if (request == null) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "建议信息不能为空");
             }
-            return ApiResponse.success(suggestionService.createSuggestion(request));
+            String wxid = jwtTokenService.getWxidFromToken(request.getJwtToken());
+            // 检查jwt token是否有效
+            if (StringUtils.isBlank(wxid)) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "jwt token无效");
+            }
+            SuggestionDO suggestionDO = constructSuggestionDO(request, wxid);
+            return ApiResponse.success(suggestionService.createSuggestion(suggestionDO));
         } catch (BusinessException e) {
             log.warn("创建建议业务异常: {}", e.getMessage());
             return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
@@ -37,8 +52,30 @@ public class SuggestionController extends BaseController {
         }
     }
 
+    private SuggestionDO constructSuggestionDO(CreateSuggestionRequest request, String wxid) {
+        SuggestionDO suggestionDO = new SuggestionDO();
+        suggestionDO.setTitle(request.getTitle());
+        suggestionDO.setProblemDescription(request.getProblemDescription());
+        suggestionDO.setProblemAnalysis(request.getProblemAnalysis());
+        suggestionDO.setSuggestion(request.getSuggestion());
+        suggestionDO.setExpectedOutcome(request.getExpectedOutcome());
+        suggestionDO.setUserWxid(wxid);
+        suggestionDO.setOrgId(request.getOrgId());
+        suggestionDO.setStatus(SuggestionStatusEnum.SUBMITTED);
+        suggestionDO.setGmtCreate(LocalDateTime.now());
+        suggestionDO.setGmtModified(LocalDateTime.now());
+        if (request.getImages() != null) {
+            String imageUrlsJson = JSON.toJSONString(request.getImages());
+            System.out.println("Debug - Serialized imageUrls: " + imageUrlsJson);
+            suggestionDO.setImageUrls(imageUrlsJson);
+        } else {
+            suggestionDO.setImageUrls("[]");
+        }
+        return suggestionDO;
+    }
+
     @GetMapping("/{id}")
-    public ApiResponse<SuggestionResponse> getSuggestion(@PathVariable Long id) {
+    public ApiResponse<SuggestionDO> getSuggestion(@PathVariable Long id) {
         try {
             if (id == null) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "建议ID不能为空");

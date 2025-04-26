@@ -12,6 +12,7 @@ import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 
 @Component
 public class JwtTokenService {
@@ -80,5 +81,19 @@ public class JwtTokenService {
      */
     public void cleanExpiredTokens() {
         jwtTokenRepository.deleteByGmtExpiredBefore(LocalDateTime.now());
+    }
+
+    /**
+     * 检查token是否有效
+     * @param jwtToken JWT token
+     * @return 是否有效
+     */
+    public boolean isTokenValid(String jwtToken) {
+        // 判断jwt token是否为空
+        if (StringUtils.isBlank(jwtToken)) {
+            return false;
+        }
+        // 判断jwt token是否存在
+        return jwtTokenRepository.findByToken(jwtToken).isPresent();
     }
 } 
