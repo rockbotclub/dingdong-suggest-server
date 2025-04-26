@@ -17,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SwaggerConfig {
 
-    private final DomainConfig domainConfig;
-
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
@@ -33,6 +31,6 @@ public class SwaggerConfig {
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))
-                .addServersItem(new Server().url("https://" + domainConfig.getBaseUrl()));
+                .addServersItem(new Server().url("/"));
     }
 } 

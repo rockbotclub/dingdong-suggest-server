@@ -19,10 +19,14 @@ import cc.rockbot.dds.dto.UserRegisterDTO;
 import cc.rockbot.dds.dto.ApiResponse;
 import cc.rockbot.dds.dto.UserRegisterRequest;
 import cc.rockbot.dds.util.JwtTokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+@Tag(name = "用户管理", description = "用户相关的接口")
+public class UserController extends BaseController {
     
     @Autowired
     private UserService userService;
@@ -40,7 +44,9 @@ public class UserController {
     private JwtTokenService jwtTokenService;
 
     @PostMapping("/login-by-wx-code")
+    @Operation(summary = "微信登录", description = "使用微信code进行登录")
     public ApiResponse<UserRegisterDTO> login(@RequestBody UserLoginRequest request) {
+        commonApiResponses();
         try {
             if (request == null || request.getWxCode() == null || request.getWxCode().isEmpty()) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "微信登录code不能为空");
@@ -58,7 +64,9 @@ public class UserController {
     }
 
     @PostMapping("/send-verification-code")
+    @Operation(summary = "发送验证码", description = "发送手机验证码")
     public ApiResponse<Void> sendVerificationCode(@RequestBody SendVerificationRequest request) {
+        commonApiResponses();
         try {
             if (request == null || request.getPhone() == null || request.getPhone().isEmpty()) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "手机号不能为空");
@@ -76,7 +84,9 @@ public class UserController {
     }
 
     @PostMapping("/register-by-phone-and-code")
+    @Operation(summary = "手机号注册", description = "使用手机号和验证码进行注册")
     public ApiResponse<UserRegisterDTO> register(@RequestBody UserRegisterRequest request) {
+        commonApiResponses();
         try {
             if (request == null || request.getPhone() == null || request.getPhone().isEmpty() 
                     || request.getVerificationCode() == null || request.getVerificationCode().isEmpty()
@@ -108,12 +118,10 @@ public class UserController {
         }
     }
 
-     /** 
-     * 根据用户微信id查询用户所属的组织
-     * PostMapping，把JWT token作为参数
-     */
     @PostMapping("/user-org")
+    @Operation(summary = "获取用户组织", description = "根据JWT token获取用户所属的组织")
     public ApiResponse<List<OrganizationDO>> getOrganizationsByUserWxid(@RequestBody String jwtToken) {
+        commonApiResponses();
         try {
             // 从JWT token中获取用户信息
             String wxid = jwtTokenService.getWxidFromToken(jwtToken);
@@ -133,5 +141,4 @@ public class UserController {
             return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
         }
     }
-
 } 

@@ -53,10 +53,10 @@ springdoc:
     tagsSorter: alpha
     tryItOutEnabled: true
     urls:
-      - url: https://${domain.baseUrl}/v3/api-docs
+      - url: /v3/api-docs
         name: API Documentation
     servers:
-      - url: https://${domain.baseUrl}
+      - url: /
   api-docs:
     path: /v3/api-docs
   group-configs:
