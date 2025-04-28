@@ -47,18 +47,14 @@ public class JwtTokenService {
 
         LocalDateTime expiredTime = LocalDateTime.now().plusHours(24);
         
-        if (existingToken.isPresent()) {
-            jwtTokenRepository.updateExpiredTimeByWxid(wxid, expiredTime);
-        } else {
-            JwtToken newToken = new JwtToken();
-            newToken.setToken(token);
-            newToken.setWxid(wxid);
-            newToken.setGmtExpired(expiredTime);
-            newToken.setGmtCreate(LocalDateTime.now());
-            newToken.setGmtModified(LocalDateTime.now());
-            jwtTokenRepository.save(newToken);
-        }
-
+        
+        JwtToken newToken = new JwtToken();
+        newToken.setToken(token);
+        newToken.setWxid(wxid);
+        newToken.setGmtExpired(expiredTime);
+        newToken.setGmtCreate(LocalDateTime.now());
+        newToken.setGmtModified(LocalDateTime.now());
+        jwtTokenRepository.save(newToken);
         return token;
     }
 

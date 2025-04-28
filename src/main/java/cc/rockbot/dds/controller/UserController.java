@@ -55,7 +55,7 @@ public class UserController extends BaseController {
             UserRegisterDTO user = userService.loginByWxCode(request.getWxCode());
             return ApiResponse.success(user);
         } catch (BusinessException e) {
-            log.warn("微信登录业务异常: {}", e.getMessage());
+            log.warn("微信登录业务异常: {}", e.getMessage(), e);
             return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
         } catch (Exception e) {
             log.error("微信登录系统异常", e);
