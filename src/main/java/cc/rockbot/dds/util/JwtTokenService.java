@@ -7,12 +7,13 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.apache.commons.lang3.StringUtils;
 
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
 
 @Component
 public class JwtTokenService {
@@ -30,13 +31,15 @@ public class JwtTokenService {
      * @return JWT token
      */
     public String generateTokenIfNotExist(String wxid) {
-        Optional<JwtToken> existingToken = jwtTokenRepository.findByWxid(wxid);
+        List<JwtToken> existingTokens = jwtTokenRepository.findByWxid(wxid);
         
-        if (existingToken.isPresent()) {
-            JwtToken token = existingToken.get();
+        if (!existingTokens.isEmpty()) {
+            JwtToken token = existingTokens.get(0);  // 获取最新的token
             if (token.getGmtExpired() != null && token.getGmtExpired().isAfter(LocalDateTime.now())) {
                 return token.getToken();
             }
+            // 删除所有旧的token
+            jwtTokenRepository.deleteAll(existingTokens);
         }
 
         String token = Jwts.builder()
@@ -47,13 +50,13 @@ public class JwtTokenService {
 
         LocalDateTime expiredTime = LocalDateTime.now().plusHours(24);
         
-        
         JwtToken newToken = new JwtToken();
         newToken.setToken(token);
         newToken.setWxid(wxid);
         newToken.setGmtExpired(expiredTime);
         newToken.setGmtCreate(LocalDateTime.now());
         newToken.setGmtModified(LocalDateTime.now());
+        
         jwtTokenRepository.save(newToken);
         return token;
     }
