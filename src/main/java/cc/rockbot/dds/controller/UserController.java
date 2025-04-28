@@ -124,6 +124,7 @@ public class UserController extends BaseController {
         commonApiResponses();
         try {
             // 从JWT token中获取用户信息
+            log.info("获取用户组织，JWT token: {}", jwtToken);
             String wxid = jwtTokenService.getWxidFromToken(jwtToken);
             if (wxid == null) {
                 throw new BusinessException(ErrorCode.USER_NOT_FOUND);
