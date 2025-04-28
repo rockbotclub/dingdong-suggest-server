@@ -118,9 +118,9 @@ public class UserController extends BaseController {
         }
     }
 
-    @PostMapping("/user-org")
+    @GetMapping("/user-org")
     @Operation(summary = "获取用户组织", description = "根据JWT token获取用户所属的组织")
-    public ApiResponse<List<OrganizationDO>> getOrganizationsByUserWxid(@RequestBody String jwtToken) {
+    public ApiResponse<List<OrganizationDO>> getOrganizationsByUserWxid(@RequestParam String jwtToken) {
         commonApiResponses();
         try {
             // 从JWT token中获取用户信息
