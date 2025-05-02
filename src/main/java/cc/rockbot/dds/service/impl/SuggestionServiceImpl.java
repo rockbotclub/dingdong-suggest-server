@@ -15,7 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.apache.commons.lang3.StringUtils;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import java.time.LocalDateTime;
+import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SuggestionServiceImpl implements SuggestionService {
@@ -105,9 +108,27 @@ public class SuggestionServiceImpl implements SuggestionService {
             throw new RuntimeException("Invalid wxid");
         }
         
+        log.info("Searching suggestions with params - wxid: {}, orgId: {}, year: {}, page: {}, size: {}", 
+            wxid, orgId, year, pageable.getPageNumber(), pageable.getPageSize());
+        
         Page<SuggestionDO> suggestions = suggestionRepository.findByUserWxidAndOrgIdAndYear(
             wxid, orgId, year, pageable
         );
+        
+        log.info("Found {} suggestions", suggestions.getTotalElements());
+        if (suggestions.getTotalElements() == 0) {
+            // 检查是否有任何数据
+            Page<SuggestionDO> allSuggestions = suggestionRepository.findAll(pageable);
+            log.info("Total suggestions in database: {}", allSuggestions.getTotalElements());
+            
+            // 检查特定用户的所有建议
+            List<SuggestionDO> userSuggestions = suggestionRepository.findByUserWxid(wxid);
+            log.info("Total suggestions for user {}: {}", wxid, userSuggestions.size());
+            
+            // 检查特定组织的所有建议
+            Page<SuggestionDO> orgSuggestions = suggestionRepository.findByOrgId(orgId, pageable);
+            log.info("Total suggestions for org {}: {}", orgId, orgSuggestions.getTotalElements());
+        }
         
         return suggestions.map(this::convertToLiteDTO);
     }

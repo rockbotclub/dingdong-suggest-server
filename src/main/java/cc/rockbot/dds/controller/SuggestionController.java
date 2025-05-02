@@ -19,6 +19,7 @@ import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import com.alibaba.fastjson.JSON;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import io.swagger.v3.oas.annotations.Operation;
 
@@ -115,7 +116,7 @@ public class SuggestionController extends BaseController {
             @RequestParam String orgId,
             @RequestParam String year,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "gmtCreate,desc") String sort) {
         try {
             String wxid = jwtTokenService.getWxidFromToken(jwtToken);
@@ -130,10 +131,21 @@ public class SuggestionController extends BaseController {
                 ? Sort.Direction.DESC 
                 : Sort.Direction.ASC;
             
+            // 创建分页对象
+            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+            
+            // 获取数据
             Page<SuggestionLiteDTO> suggestions = suggestionService.getAllSuggestions(
-                wxid, orgId, Integer.parseInt(year), 
-                PageRequest.of(page, size, Sort.by(direction, sortField))
+                wxid, orgId, Integer.parseInt(year), pageable
             );
+            
+            // 如果请求的页码超出范围，返回第一页
+            if (page > 0 && suggestions.getTotalElements() > 0 && suggestions.getContent().isEmpty()) {
+                pageable = PageRequest.of(0, size, Sort.by(direction, sortField));
+                suggestions = suggestionService.getAllSuggestions(
+                    wxid, orgId, Integer.parseInt(year), pageable
+                );
+            }
             
             return ApiResponse.success(suggestions);
         } catch (BusinessException e) {
