@@ -10,15 +10,11 @@ import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import cc.rockbot.dds.util.JwtTokenService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.apache.commons.lang3.StringUtils;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +22,6 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     private final SuggestionRepository suggestionRepository;
 
-    @Autowired
-    private JwtTokenService jwtTokenService;
 
     @Override
     @Transactional
@@ -106,15 +100,16 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SuggestionLiteDTO> getAllSuggestions(String jwtToken, String orgId, String year) {
-        String wxid = jwtTokenService.getWxidFromToken(jwtToken);
+    public Page<SuggestionLiteDTO> getAllSuggestions(String wxid, String orgId, int year, Pageable pageable) {
         if (StringUtils.isBlank(wxid)) {
-            throw new RuntimeException("Invalid JWT token");
+            throw new RuntimeException("Invalid wxid");
         }
-        List<SuggestionDO> suggestions = suggestionRepository.findByUserWxidAndOrgIdAndYear(wxid, orgId, Integer.parseInt(year));
-        return suggestions.stream()
-                .map(this::convertToLiteDTO)
-                .collect(Collectors.toList());
+        
+        Page<SuggestionDO> suggestions = suggestionRepository.findByUserWxidAndOrgIdAndYear(
+            wxid, orgId, year, pageable
+        );
+        
+        return suggestions.map(this::convertToLiteDTO);
     }
 
     private SuggestionLiteDTO convertToLiteDTO(SuggestionDO suggestion) {

@@ -3,7 +3,8 @@ package cc.rockbot.dds.service;
 import cc.rockbot.dds.dto.CreateSuggestionRequest;
 import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import cc.rockbot.dds.model.SuggestionDO;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * 建议服务接口
@@ -59,12 +60,12 @@ public interface SuggestionService {
     void deleteSuggestion(Long id);
 
     /**
-     * 根据JWT token获取所有建议
-     * 
-     * @param jwtToken JWT token
+     * 获取用户的建议列表
+     * @param wxid 用户微信ID
      * @param orgId 组织ID
      * @param year 年份
-     * @return 建议简要信息列表
+     * @param pageable 分页参数
+     * @return 建议列表
      */
-    List<SuggestionLiteDTO> getAllSuggestions(String jwtToken, String orgId, String year);
+    Page<SuggestionLiteDTO> getAllSuggestions(String wxid, String orgId, int year, Pageable pageable);
 } 

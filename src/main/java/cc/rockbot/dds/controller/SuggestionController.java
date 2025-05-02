@@ -17,6 +17,10 @@ import cc.rockbot.dds.util.JwtTokenService;
 import java.time.LocalDateTime;
 import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import com.alibaba.fastjson.JSON;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import io.swagger.v3.oas.annotations.Operation;
 
 @Slf4j
 @RestController
@@ -34,6 +38,9 @@ public class SuggestionController extends BaseController {
         try {
             if (request == null) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "建议信息不能为空");
+            }
+            if (StringUtils.isBlank(request.getJwtToken())) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "jwt token不能为空");
             }
             String wxid = jwtTokenService.getWxidFromToken(request.getJwtToken());
             // 检查jwt token是否有效
@@ -74,10 +81,14 @@ public class SuggestionController extends BaseController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<SuggestionDO> getSuggestion(@PathVariable Long id) {
+    public ApiResponse<SuggestionDO> getSuggestion(@PathVariable Long id, @RequestParam String jwtToken) {
         try {
             if (id == null) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "建议ID不能为空");
+            }
+            String wxid = jwtTokenService.getWxidFromToken(jwtToken);
+            if (StringUtils.isBlank(wxid)) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "jwt token无效");
             }
             return ApiResponse.success(suggestionService.getSuggestionById(id));
         } catch (BusinessException e) {
@@ -98,36 +109,38 @@ public class SuggestionController extends BaseController {
      * @return 建议列表
      */
     @GetMapping
-    public ApiResponse<List<SuggestionLiteDTO>> getAllSuggestions(@RequestParam String jwtToken
-                                                                , @RequestParam String orgId
-                                                                , @RequestParam String year) {
+    @Operation(summary = "获取建议列表", description = "获取用户的建议列表，支持分页")
+    public ApiResponse<Page<SuggestionLiteDTO>> getAllSuggestions(
+            @RequestParam String jwtToken,
+            @RequestParam String orgId,
+            @RequestParam String year,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "gmtCreate,desc") String sort) {
         try {
-            if (jwtToken == null || jwtToken.isEmpty() || orgId == null || orgId.isEmpty() || year == null || year.isEmpty()) {
-                throw new BusinessException(ErrorCode.PARAM_ERROR, "JWT token、组织ID和年份不能为空");
+            String wxid = jwtTokenService.getWxidFromToken(jwtToken);
+            if (StringUtils.isBlank(wxid)) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "jwt token无效");
             }
-            return ApiResponse.success(suggestionService.getAllSuggestions(jwtToken, orgId, year));
+            
+            // 解析排序参数
+            String[] sortParams = sort.split(",");
+            String sortField = sortParams[0];
+            Sort.Direction direction = sortParams.length > 1 && "desc".equalsIgnoreCase(sortParams[1]) 
+                ? Sort.Direction.DESC 
+                : Sort.Direction.ASC;
+            
+            Page<SuggestionLiteDTO> suggestions = suggestionService.getAllSuggestions(
+                wxid, orgId, Integer.parseInt(year), 
+                PageRequest.of(page, size, Sort.by(direction, sortField))
+            );
+            
+            return ApiResponse.success(suggestions);
         } catch (BusinessException e) {
             log.warn("获取建议列表业务异常: {}", e.getMessage());
             return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
         } catch (Exception e) {
             log.error("获取建议列表系统异常", e);
-            return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
-        }
-    }
-
-    @PutMapping("/{id}/status")
-    public ApiResponse<Void> updateStatus(@PathVariable Long id, @RequestParam String status) {
-        try {
-            if (id == null || status == null || status.isEmpty()) {
-                throw new BusinessException(ErrorCode.PARAM_ERROR, "建议ID和状态不能为空");
-            }
-            suggestionService.updateSuggestionStatus(id, status);
-            return ApiResponse.success(null);
-        } catch (BusinessException e) {
-            log.warn("更新建议状态业务异常: {}", e.getMessage());
-            return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
-        } catch (Exception e) {
-            log.error("更新建议状态系统异常", e);
             return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
         }
     }

@@ -22,4 +22,6 @@ public interface SuggestionRepository extends JpaRepository<SuggestionDO, Long> 
         @Param("orgId") String orgId,
         @Param("year") Integer year
     );
+
+    Page<SuggestionDO> findByUserWxidAndOrgIdAndYear(String userWxid, String orgId, int year, Pageable pageable);
 } 

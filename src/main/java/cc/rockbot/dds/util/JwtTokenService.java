@@ -68,6 +68,11 @@ public class JwtTokenService {
      * @return 微信ID
      */
     public String getWxidFromToken(String jwtToken) {
+        // 判断jwt token是否为空
+        if (StringUtils.isBlank(jwtToken)) {
+            return null;
+        }
+        // 判断jwt token是否存在
         Optional<JwtToken> existingToken = jwtTokenRepository.findByToken(jwtToken);
         if (existingToken.isPresent()) {
             return existingToken.get().getWxid();
