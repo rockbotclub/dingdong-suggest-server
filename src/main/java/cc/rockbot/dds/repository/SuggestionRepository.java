@@ -17,11 +17,10 @@ public interface SuggestionRepository extends JpaRepository<SuggestionDO, Long> 
     List<SuggestionDO> findByUserWxid(String userWxid);
     
     @Query("SELECT s FROM SuggestionDO s WHERE s.userWxid = :userWxid AND s.orgId = :orgId AND FUNCTION('YEAR', s.gmtCreate) = :year")
-    List<SuggestionDO> findByUserWxidAndOrgIdAndYear(
+    Page<SuggestionDO> findByUserWxidAndOrgIdAndYear(
         @Param("userWxid") String userWxid,
         @Param("orgId") String orgId,
-        @Param("year") Integer year
+        @Param("year") int year,
+        Pageable pageable
     );
-
-    Page<SuggestionDO> findByUserWxidAndOrgIdAndYear(String userWxid, String orgId, int year, Pageable pageable);
 } 
