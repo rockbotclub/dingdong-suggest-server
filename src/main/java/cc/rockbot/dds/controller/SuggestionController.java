@@ -134,6 +134,7 @@ public class SuggestionController extends BaseController {
      *                          - SYSTEM_ERROR(10000): 系统错误
      */
     @Operation(summary = "获取建议列表", description = "获取用户的建议列表，支持分页")
+    @GetMapping
     public ApiResponse<Page<SuggestionLiteDTO>> getAllSuggestions(
             @RequestParam String jwtToken,
             @RequestParam String orgId,
