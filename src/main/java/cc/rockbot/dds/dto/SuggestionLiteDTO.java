@@ -11,9 +11,9 @@ import lombok.Data;
  * 
  */
 @Data
-public class SuggestionLiteDTO  implements Serializable {
+public class SuggestionLiteDTO implements Serializable {
     private Long id;
     private String title;
-    private int status;
+    private String status;
     private LocalDateTime createTime;
 }

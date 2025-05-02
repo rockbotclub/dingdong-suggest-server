@@ -116,7 +116,7 @@ public class SuggestionServiceImpl implements SuggestionService {
         SuggestionLiteDTO dto = new SuggestionLiteDTO();
         dto.setId(suggestion.getId());
         dto.setTitle(suggestion.getTitle());
-        dto.setStatus(suggestion.getStatus().getCode());
+        dto.setStatus(suggestion.getStatus().name());
         dto.setCreateTime(suggestion.getGmtCreate());
         return dto;
     }
