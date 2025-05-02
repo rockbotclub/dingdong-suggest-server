@@ -91,7 +91,7 @@ public class SuggestionController extends BaseController {
             if (StringUtils.isBlank(wxid)) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "jwt token无效");
             }
-            return ApiResponse.success(suggestionService.getSuggestionById(id));
+            return ApiResponse.success(suggestionService.getSuggestionById(id, wxid));
         } catch (BusinessException e) {
             log.warn("获取建议业务异常: {}", e.getMessage());
             return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
@@ -139,14 +139,6 @@ public class SuggestionController extends BaseController {
                 wxid, orgId, Integer.parseInt(year), pageable
             );
             
-            // 如果请求的页码超出范围，返回第一页
-            if (page > 0 && suggestions.getTotalElements() > 0 && suggestions.getContent().isEmpty()) {
-                pageable = PageRequest.of(0, size, Sort.by(direction, sortField));
-                suggestions = suggestionService.getAllSuggestions(
-                    wxid, orgId, Integer.parseInt(year), pageable
-                );
-            }
-            
             return ApiResponse.success(suggestions);
         } catch (BusinessException e) {
             log.warn("获取建议列表业务异常: {}", e.getMessage());
@@ -157,19 +149,44 @@ public class SuggestionController extends BaseController {
         }
     }
 
-    @PutMapping("/{id}/withdraw")
-    public ApiResponse<Void> withdrawSuggestion(@PathVariable Long id) {
+    @PostMapping("/withdraw/{id}")
+    public ApiResponse<Void> withdrawSuggestion(@PathVariable Long id, @RequestParam String jwtToken) {
         try {
             if (id == null) {
                 throw new BusinessException(ErrorCode.PARAM_ERROR, "建议ID不能为空");
             }
-            suggestionService.updateSuggestionStatus(id, "WITHDRAWN");
+            String wxid = jwtTokenService.getWxidFromToken(jwtToken);
+            if (StringUtils.isBlank(wxid)) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "jwt token无效");
+            }
+            suggestionService.withdrawSuggestion(id, wxid);
             return ApiResponse.success(null);
         } catch (BusinessException e) {
             log.warn("撤回建议业务异常: {}", e.getMessage());
             return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
         } catch (Exception e) {
             log.error("撤回建议系统异常", e);
+            return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
+        }
+    }
+
+    @PostMapping("/delete/{id}")
+    public ApiResponse<Void> deleteSuggestion(@PathVariable Long id, @RequestParam String jwtToken) {
+        try {
+            if (id == null) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "建议ID不能为空");
+            }
+            String wxid = jwtTokenService.getWxidFromToken(jwtToken);
+            if (StringUtils.isBlank(wxid)) {
+                throw new BusinessException(ErrorCode.PARAM_ERROR, "jwt token无效");
+            }
+            suggestionService.deleteSuggestion(id, wxid);
+            return ApiResponse.success(null);
+        } catch (BusinessException e) {
+            log.warn("删除建议业务异常: {}", e.getMessage());
+            return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
+        } catch (Exception e) {
+            log.error("删除建议系统异常", e);
             return ApiResponse.error(ErrorCode.SYSTEM_ERROR.getCode(), "系统异常，请稍后重试");
         }
     }

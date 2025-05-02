@@ -23,33 +23,25 @@ public interface SuggestionService {
      */
     SuggestionDO createSuggestion(SuggestionDO suggestionDO);
 
+
     /**
-     * 更新建议状态
+     * 撤回建议
      *
-     * @param suggestionId 建议ID
-     * @param status 新的状态值
-     * @throws RuntimeException 当建议不存在或更新失败时抛出
+     * @param id 建议ID
+     * @param wxid 用户微信ID
+     * @throws RuntimeException 当建议不存在或撤回失败时抛出
      */
-    void updateSuggestionStatus(Long suggestionId, String status);
+    void withdrawSuggestion(Long id, String wxid);
 
     /**
      * 根据ID获取建议
      *
      * @param id 建议ID
+     * @param wxid 用户微信ID
      * @return 建议响应对象
      * @throws RuntimeException 当建议不存在时抛出
      */
-    SuggestionDO getSuggestionById(Long id);
-
-    /**
-     * 更新建议信息
-     *
-     * @param id 建议ID
-     * @param request 建议请求对象，包含要更新的信息
-     * @return 更新后的建议响应对象
-     * @throws RuntimeException 当建议不存在或更新失败时抛出
-     */
-    SuggestionDO updateSuggestion(Long id, CreateSuggestionRequest request);
+    SuggestionDO getSuggestionById(Long id, String wxid);
 
     /**
      * 删除建议
@@ -57,7 +49,7 @@ public interface SuggestionService {
      * @param id 建议ID
      * @throws RuntimeException 当建议不存在或删除失败时抛出
      */
-    void deleteSuggestion(Long id);
+    void deleteSuggestion(Long id, String wxid);
 
     /**
      * 获取用户的建议列表

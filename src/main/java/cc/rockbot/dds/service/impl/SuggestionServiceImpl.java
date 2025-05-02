@@ -1,12 +1,10 @@
 package cc.rockbot.dds.service.impl;
 
-import cc.rockbot.dds.dto.ProblemImage;
-import cc.rockbot.dds.dto.CreateSuggestionRequest;
+
 import cc.rockbot.dds.enums.SuggestionStatusEnum;
 import cc.rockbot.dds.model.SuggestionDO;
 import cc.rockbot.dds.repository.SuggestionRepository;
 import cc.rockbot.dds.service.SuggestionService;
-import com.alibaba.fastjson.JSON;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +15,9 @@ import cc.rockbot.dds.dto.SuggestionLiteDTO;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
+import java.util.Objects;
+import cc.rockbot.dds.exception.BusinessException;
+import cc.rockbot.dds.exception.ErrorCode;
 
 @Slf4j
 @Service
@@ -25,78 +26,52 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     private final SuggestionRepository suggestionRepository;
 
-
     @Override
     @Transactional
     public SuggestionDO createSuggestion(SuggestionDO suggestionDO) {
-        
         suggestionDO = suggestionRepository.save(suggestionDO);
         return suggestionDO;
     }
 
     @Override
     @Transactional
-    public void updateSuggestionStatus(Long suggestionId, String status) {
-        SuggestionDO suggestion = suggestionRepository.findById(suggestionId)
-                .orElseThrow(() -> new RuntimeException("Suggestion not found"));
-
-        SuggestionStatusEnum newStatus;
-        try {
-            newStatus = SuggestionStatusEnum.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status: " + status);
+    public void withdrawSuggestion(Long id, String wxid) {
+        SuggestionDO suggestion = suggestionRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SUGGESTION_NOT_FOUND));
+        if (!Objects.equals(suggestion.getUserWxid(), wxid)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "不允许撤回其他人的建议");
+        }
+        if (suggestion.getStatus() != SuggestionStatusEnum.SUBMITTED) {
+            throw new BusinessException(ErrorCode.SUGGESTION_STATUS_INVALID, "只有处于未审批状态的建议才能撤回");
         }
 
-        // Business rules for status transitions
-        if (suggestion.getStatus() == SuggestionStatusEnum.APPROVED && newStatus == SuggestionStatusEnum.WITHDRAWN) {
-            throw new RuntimeException("Cannot withdraw an approved suggestion");
-        }
-
-        suggestion.setStatus(newStatus);
+        suggestion.setStatus(SuggestionStatusEnum.WITHDRAWN);
         suggestion.setGmtModified(LocalDateTime.now());
         suggestionRepository.save(suggestion);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public SuggestionDO getSuggestionById(Long id) {
+    public SuggestionDO getSuggestionById(Long id, String wxid) {
         SuggestionDO suggestion = suggestionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Suggestion not found"));
-        return suggestion;
-    }
-
-    @Override
-    @Transactional
-    public SuggestionDO updateSuggestion(Long id, CreateSuggestionRequest request) {
-        SuggestionDO suggestion = suggestionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Suggestion not found"));
-
-        suggestion.setTitle(request.getTitle());
-        suggestion.setProblemDescription(request.getProblemDescription());
-        suggestion.setProblemAnalysis(request.getProblemAnalysis());
-        suggestion.setSuggestion(request.getSuggestion());
-        suggestion.setExpectedOutcome(request.getExpectedOutcome());
-        suggestion.setOrgId(request.getOrgId());
-        suggestion.setGmtModified(LocalDateTime.now());
-        
-        // Add logging and validation for imageUrls
-        if (request.getImages() != null) {
-            String imageUrlsJson = JSON.toJSONString(request.getImages());
-            System.out.println("Debug - Serialized imageUrls: " + imageUrlsJson);
-            suggestion.setImageUrls(imageUrlsJson);
-        } else {
-            suggestion.setImageUrls("[]");
+                .orElseThrow(() -> new BusinessException(ErrorCode.SUGGESTION_NOT_FOUND));
+        if (!Objects.equals(suggestion.getUserWxid(), wxid)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "不允许查看其他人的建议");
         }
-
-        suggestion = suggestionRepository.save(suggestion);
         return suggestion;
     }
 
     @Override
     @Transactional
-    public void deleteSuggestion(Long id) {
-        if (!suggestionRepository.existsById(id)) {
-            throw new RuntimeException("Suggestion not found");
+    public void deleteSuggestion(Long id, String wxid) {
+        SuggestionDO suggestion = suggestionRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SUGGESTION_NOT_FOUND));
+        if (!Objects.equals(suggestion.getUserWxid(), wxid)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "不允许删除其他人的建议");
+        }
+        // 只有处于已撤回的建议才能删除
+        if (suggestion.getStatus() != SuggestionStatusEnum.WITHDRAWN) {
+            throw new BusinessException(ErrorCode.SUGGESTION_STATUS_INVALID, "只有处于已撤回的建议才能删除");
         }
         suggestionRepository.deleteById(id);
     }
@@ -105,7 +80,7 @@ public class SuggestionServiceImpl implements SuggestionService {
     @Transactional(readOnly = true)
     public Page<SuggestionLiteDTO> getAllSuggestions(String wxid, String orgId, int year, Pageable pageable) {
         if (StringUtils.isBlank(wxid)) {
-            throw new RuntimeException("Invalid wxid");
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "Invalid wxid");
         }
         
         log.info("Searching suggestions with params - wxid: {}, orgId: {}, year: {}, page: {}, size: {}", 
@@ -141,5 +116,4 @@ public class SuggestionServiceImpl implements SuggestionService {
         dto.setCreateTime(suggestion.getGmtCreate());
         return dto;
     }
-
 } 
