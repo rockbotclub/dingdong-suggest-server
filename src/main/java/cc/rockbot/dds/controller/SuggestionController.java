@@ -34,7 +34,7 @@ public class SuggestionController extends BaseController {
 
     private final JwtTokenService jwtTokenService;
 
-    @PostMapping
+    @PostMapping("/create")
     public ApiResponse<SuggestionDO> createSuggestion(@RequestBody CreateSuggestionRequest request) {
         try {
             if (request == null) {
