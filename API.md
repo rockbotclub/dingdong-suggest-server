@@ -1,10 +1,258 @@
 # 叮咚建议服务 API 文档
 
-## 基础信息
+## 基本信息
 
-- 基础URL: `http://localhost:8080`
-- 所有请求和响应均使用 JSON 格式
-- 认证方式: Bearer Token (JWT)
+- 基础路径: `/api/v1/suggestions`
+- 认证方式: JWT Token
+- 响应格式: JSON
+- 错误处理: 统一使用 ApiResponse 格式返回
+
+## 通用响应格式
+
+```json
+{
+    "code": 0,       // 错误码，0表示成功
+    "message": "",   // 错误信息
+    "data": {}       // 响应数据
+}
+```
+
+## 通用错误码
+
+| 错误码 | 说明 |
+|--------|------|
+| 0 | 成功 |
+| 10000 | 系统错误 |
+| 10001 | 参数错误 |
+| 10002 | 资源不存在 |
+| 10003 | 未授权 |
+| 10004 | 禁止访问 |
+
+## API 列表
+
+### 1. 创建建议
+
+创建新的建议。
+
+**请求信息**
+- 路径: `POST /api/v1/suggestions/create`
+- Content-Type: `application/json`
+
+**请求参数**
+```json
+{
+    "jwtToken": "string",          // JWT token
+    "title": "string",             // 建议标题
+    "problemDescription": "string", // 问题描述
+    "problemAnalysis": "string",   // 问题分析
+    "suggestion": "string",        // 建议内容
+    "expectedOutcome": "string",   // 预期效果
+    "orgId": "string",            // 组织ID
+    "images": ["string"]          // 图片URL列表（可选）
+}
+```
+
+**响应参数**
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "id": "long",              // 建议ID
+        "title": "string",         // 建议标题
+        "problemDescription": "string", // 问题描述
+        "problemAnalysis": "string",   // 问题分析
+        "suggestion": "string",        // 建议内容
+        "expectedOutcome": "string",   // 预期效果
+        "userWxid": "string",         // 用户微信ID
+        "orgId": "string",            // 组织ID
+        "status": "string",           // 建议状态
+        "imageUrls": "string",        // 图片URL列表（JSON字符串）
+        "gmtCreate": "datetime",      // 创建时间
+        "gmtModified": "datetime"     // 修改时间
+    }
+}
+```
+
+**错误码**
+| 错误码 | 说明 |
+|--------|------|
+| 10001 | 参数错误（建议信息为空、JWT token为空或无效） |
+| 10000 | 系统错误 |
+
+### 2. 获取建议详情
+
+根据建议ID获取建议详情。
+
+**请求信息**
+- 路径: `GET /api/v1/suggestions/{id}`
+- 参数:
+  - id: 建议ID（路径参数）
+  - jwtToken: JWT token（查询参数）
+
+**响应参数**
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "id": "long",              // 建议ID
+        "title": "string",         // 建议标题
+        "problemDescription": "string", // 问题描述
+        "problemAnalysis": "string",   // 问题分析
+        "suggestion": "string",        // 建议内容
+        "expectedOutcome": "string",   // 预期效果
+        "userWxid": "string",         // 用户微信ID
+        "orgId": "string",            // 组织ID
+        "status": "string",           // 建议状态
+        "imageUrls": "string",        // 图片URL列表（JSON字符串）
+        "gmtCreate": "datetime",      // 创建时间
+        "gmtModified": "datetime"     // 修改时间
+    }
+}
+```
+
+**错误码**
+| 错误码 | 说明 |
+|--------|------|
+| 10001 | 参数错误（建议ID为空、JWT token无效） |
+| 23000 | 建议不存在 |
+| 10004 | 无权查看其他人的建议 |
+| 10000 | 系统错误 |
+
+### 3. 获取建议列表
+
+获取用户的所有建议列表，支持分页。
+
+**请求信息**
+- 路径: `GET /api/v1/suggestions`
+- 参数:
+  - jwtToken: JWT token
+  - orgId: 组织ID
+  - year: 年份
+  - page: 页码（默认0）
+  - size: 每页大小（默认10）
+  - sort: 排序字段（默认"gmtCreate,desc"）
+
+**响应参数**
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "content": [
+            {
+                "id": "long",          // 建议ID
+                "title": "string",     // 建议标题
+                "status": "string",    // 建议状态
+                "createTime": "datetime" // 创建时间
+            }
+        ],
+        "pageable": {
+            "pageNumber": "int",       // 当前页码
+            "pageSize": "int",         // 每页大小
+            "sort": {                  // 排序信息
+                "sorted": "boolean",
+                "unsorted": "boolean",
+                "empty": "boolean"
+            },
+            "offset": "long",
+            "paged": "boolean",
+            "unpaged": "boolean"
+        },
+        "totalElements": "long",       // 总记录数
+        "totalPages": "int",          // 总页数
+        "last": "boolean",            // 是否最后一页
+        "size": "int",                // 每页大小
+        "number": "int",              // 当前页码
+        "sort": {                     // 排序信息
+            "sorted": "boolean",
+            "unsorted": "boolean",
+            "empty": "boolean"
+        },
+        "numberOfElements": "int",     // 当前页记录数
+        "first": "boolean",           // 是否第一页
+        "empty": "boolean"            // 是否为空
+    }
+}
+```
+
+**错误码**
+| 错误码 | 说明 |
+|--------|------|
+| 10001 | 参数错误（JWT token无效） |
+| 10000 | 系统错误 |
+
+### 4. 撤回建议
+
+撤回已提交的建议。
+
+**请求信息**
+- 路径: `POST /api/v1/suggestions/withdraw/{id}`
+- 参数:
+  - id: 建议ID（路径参数）
+  - jwtToken: JWT token（查询参数）
+
+**响应参数**
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": null
+}
+```
+
+**错误码**
+| 错误码 | 说明 |
+|--------|------|
+| 10001 | 参数错误（建议ID为空、JWT token无效） |
+| 23000 | 建议不存在 |
+| 10004 | 无权撤回其他人的建议 |
+| 23001 | 建议状态无效（只有未审批状态的建议才能撤回） |
+| 10000 | 系统错误 |
+
+### 5. 删除建议
+
+删除已撤回的建议。
+
+**请求信息**
+- 路径: `POST /api/v1/suggestions/delete/{id}`
+- 参数:
+  - id: 建议ID（路径参数）
+  - jwtToken: JWT token（查询参数）
+
+**响应参数**
+```json
+{
+    "code": 0,
+    "message": "success",
+    "data": null
+}
+```
+
+**错误码**
+| 错误码 | 说明 |
+|--------|------|
+| 10001 | 参数错误（建议ID为空、JWT token无效） |
+| 23000 | 建议不存在 |
+| 10004 | 无权删除其他人的建议 |
+| 23001 | 建议状态无效（只有已撤回的建议才能删除） |
+| 10000 | 系统错误 |
+
+## 建议状态说明
+
+| 状态 | 说明 |
+|------|------|
+| SUBMITTED | 已提交（未审批） |
+| WITHDRAWN | 已撤回 |
+
+## 注意事项
+
+1. 所有接口都需要在请求中携带有效的 JWT token
+2. 图片上传需要先调用文件上传接口获取图片URL
+3. 分页参数从0开始计数
+4. 排序参数格式为：字段名,排序方向（asc/desc）
+5. 时间格式统一使用 ISO 8601 标准
 
 ## 认证相关
 
