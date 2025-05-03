@@ -21,7 +21,9 @@ import cc.rockbot.dds.dto.UserRegisterRequest;
 import cc.rockbot.dds.util.JwtTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import cc.rockbot.dds.dto.OrganizationDTO;
+import java.util.ArrayList;
+import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("/api/users")
@@ -120,7 +122,7 @@ public class UserController extends BaseController {
 
     @GetMapping("/user-org")
     @Operation(summary = "获取用户组织", description = "根据JWT token获取用户所属的组织")
-    public ApiResponse<List<OrganizationDO>> getOrganizationsByUserWxid(@RequestParam String jwtToken) {
+    public ApiResponse<List<OrganizationDTO>> getOrganizationsByUserWxid(@RequestParam String jwtToken) {
         commonApiResponses();
         try {
             // 从JWT token中获取用户信息
@@ -130,10 +132,20 @@ public class UserController extends BaseController {
                 throw new BusinessException(ErrorCode.USER_NOT_FOUND);
             }
 
+            List<OrganizationDTO> organizationDTOs = new ArrayList<>();
             List<UserDO> userDOs = userRepository.findByWxid(wxid);
-            List<String> orgIds = userDOs.stream().map(UserDO::getOrgId).collect(Collectors.toList());
-            List<OrganizationDO> organizationDOs = organizationService.getOrganizationsByOrgIds(orgIds);
-            return ApiResponse.success(organizationDOs);
+            for (UserDO userDO : userDOs) {
+                Optional<OrganizationDO> organizationDO = organizationService.getOrganizationById(userDO.getOrgId());
+                if (organizationDO.isPresent()) {
+                    OrganizationDTO organizationDTO = new OrganizationDTO();
+                    organizationDTO.setId(organizationDO.get().getId());
+                    organizationDTO.setOrgName(organizationDO.get().getOrgName());
+                    organizationDTO.setUserName(userDO.getUserName());
+                    organizationDTO.setUserPhone(userDO.getUserPhone());
+                    organizationDTOs.add(organizationDTO);
+                }
+            }
+            return ApiResponse.success(organizationDTOs);
         } catch (BusinessException e) {
             log.warn("获取用户组织业务异常: {}", e.getMessage());
             return ApiResponse.error(e.getErrorCode().getCode(), e.getDetailMessage());
